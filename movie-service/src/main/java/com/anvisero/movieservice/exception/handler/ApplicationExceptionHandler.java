@@ -1,6 +1,7 @@
 package com.anvisero.movieservice.exception.handler;
 
 import com.anvisero.movieservice.exception.NumericFieldParseException;
+import com.anvisero.movieservice.exception.model.DefaultErrorResponse;
 import com.anvisero.movieservice.exception.model.InvalidField;
 import com.anvisero.movieservice.exception.model.ValidationErrorResponse;
 import com.anvisero.movieservice.model.enums.Color;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,14 +136,10 @@ public class ApplicationExceptionHandler {
         return new ResponseEntity<>(response, headers, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(NumericFieldParseException.class)
-    public ResponseEntity<ValidationErrorResponse> handleNumericFieldParseException(NumericFieldParseException ex) {
-        List<InvalidField> invalidFields = List.of(InvalidField.builder().name("coordinates.x").reason(ex.getMessage()).build());
-
-        System.out.println(invalidFields.toString());
-        ValidationErrorResponse response = ValidationErrorResponse.builder()
-                .message("Unprocessable Entity")
-                .invalidFields(invalidFields)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<DefaultErrorResponse> handleMethodArgumentNotValidException(RuntimeException ex) {
+        DefaultErrorResponse response = DefaultErrorResponse.builder()
+                .message("Internal Server Error")
                 .time(LocalDateTime.now())
                 .build();
 
@@ -178,10 +176,12 @@ public class ApplicationExceptionHandler {
             } else if (originalMessage.contains("Integer")) {
                 return "Invalid number format. Integer value expected.";
             }
-        } else if (originalMessage.contains("java.time.format.DateTimeParseException")) {
+        }  else if (originalMessage.contains("java.time.format.DateTimeParseException")) {
             return "Invalid date format. Expected format: yyyy-MM-dd.";
         } else if (originalMessage.contains("Value length exceeds maximum allowed limit")
-                || originalMessage.contains("Please specify") || originalMessage.contains("Invalid format for coordinate")) {
+                || originalMessage.contains("Please specify")
+                || originalMessage.contains("Invalid format for coordinate")
+                || originalMessage.contains("Invalid value for")) {
             return originalMessage;
         }
         return "Invalid value provided";

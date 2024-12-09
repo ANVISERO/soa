@@ -39,7 +39,6 @@ public class MovieController {
     }
 
 //    @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
-//    @ResponseStatus(value = HttpStatus.CREATED)
 //    public ResponseEntity<MovieDto> addMovie(@Validated({OnCreate.class, Default.class}) @RequestBody MovieDto movieRequest) {
 //        MovieDto movieResponse = movieService.addMovie(movieRequest);
 //        URI location = ServletUriComponentsBuilder.fromCurrentRequest()

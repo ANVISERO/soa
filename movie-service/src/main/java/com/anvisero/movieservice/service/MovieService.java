@@ -14,15 +14,15 @@ public class MovieService {
     }
 
     public MovieDto addMovie(MovieDto movieDto) {
-        System.out.println(movieDto.getCoordinates());
-        System.out.println(movieDto.getScreenwriter());
+//        System.out.println(movieDto.getCoordinates());
+//        System.out.println(movieDto.getScreenwriter());
         Movie movie = movieMapper.movieRequestToMovie(movieDto);
         movie.setId(1L);
-        System.out.println(movie.getCoordinates());
-        System.out.println(movie.getScreenwriter());
+//        System.out.println(movie.getCoordinates());
+//        System.out.println(movie.getScreenwriter());
         MovieDto movieDto1 = movieMapper.movieToMovieResponse(movie);
-        System.out.println(movieDto1.getCoordinates());
-        System.out.println(movieDto1.getScreenwriter());
+//        System.out.println(movieDto1.getCoordinates());
+//        System.out.println(movieDto1.getScreenwriter());
         return movieDto1;
     }
 }
