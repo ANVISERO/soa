@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/movies")
@@ -28,7 +31,22 @@ public class MovieController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<MovieDto> addMovie(@Validated({OnCreate.class, Default.class}) @RequestBody MovieDto movieRequest) {
         MovieDto movieResponse = movieService.addMovie(movieRequest);
-        return ResponseEntity.ok(movieResponse);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(movieResponse.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(movieResponse);
     }
+
+//    @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+//    @ResponseStatus(value = HttpStatus.CREATED)
+//    public ResponseEntity<MovieDto> addMovie(@Validated({OnCreate.class, Default.class}) @RequestBody MovieDto movieRequest) {
+//        MovieDto movieResponse = movieService.addMovie(movieRequest);
+//        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+//                .path("/{id}")
+//                .buildAndExpand(movieResponse.getId())
+//                .toUri();
+//        return ResponseEntity.created(location).body(movieResponse);
+//    }
 
 }
