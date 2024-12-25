@@ -4,14 +4,11 @@ import com.anvisero.movieservice.deserializer.MovieGenreEnumLengthRestrictedDese
 import com.anvisero.movieservice.deserializer.MpaaRatingEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.model.enums.MovieGenre;
 import com.anvisero.movieservice.model.enums.MpaaRating;
-import com.anvisero.movieservice.validation.OnCreate;
-import com.anvisero.movieservice.validation.OnUpdate;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -21,20 +18,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @JacksonXmlRootElement(localName = "MovieResponse")
 public class MovieDto {
 
-    @Null(groups = OnCreate.class, message = "Unique identifier is set automatically")
-    @NotNull(groups = OnUpdate.class, message = "Please provide the unique movie identifier")
-    @Min(groups = OnUpdate.class, value = 1, message = "Unique identifier must be at least 1")
-    @Max(groups = OnUpdate.class, value = Long.MAX_VALUE, message = "Unique identifier cannot be more than 9,223,372,036,854,775,807")
+    @Null(message = "Unique identifier is set automatically")
     @JacksonXmlProperty(localName = "id")
     private Long id;
 

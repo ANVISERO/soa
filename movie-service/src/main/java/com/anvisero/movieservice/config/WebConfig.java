@@ -38,6 +38,12 @@ public class WebConfig {
         // Отключаем исключение при наличии неизвестных полей
         xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+        // Устанавливаем, чтобы пустые коллекции не сериализовались как null
+        xmlMapper.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, true);
+
+        // Устанавливаем, чтобы null-значения не пропускались
+        xmlMapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS);
+
         // Создаём и возвращаем HTTP Message Converter
         return new MappingJackson2XmlHttpMessageConverter(xmlMapper);
     }

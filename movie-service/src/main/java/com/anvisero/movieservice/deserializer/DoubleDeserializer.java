@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.io.IOException;
 
-public class CoordinateXDeserializer extends JsonDeserializer<Double> {
+public class DoubleDeserializer extends JsonDeserializer<Double> {
 
 
     private static final double MIN_VALUE = -2_147_483_648;
@@ -18,8 +18,14 @@ public class CoordinateXDeserializer extends JsonDeserializer<Double> {
     @Override
     public Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = p.getText();
+        String fieldName = ctxt.getParser().currentName();
+        String parentField = p.getParsingContext().getParent() != null
+                ? p.getParsingContext().getParent().getCurrentName()
+                : null;
+
+        String fieldFullName = parentField != null ? parentField + "." + fieldName : fieldName;
         if (value.isEmpty()) {
-            throw JsonMappingException.from(p,"Please specify coordinate x value");
+            throw JsonMappingException.from(p,"Please specify " + fieldFullName + " value");
         }
 
         if (value.length() > MAX_LENGTH) {
@@ -30,11 +36,11 @@ public class CoordinateXDeserializer extends JsonDeserializer<Double> {
         try {
             double parsedValue = Double.parseDouble(value);
             if (parsedValue < MIN_VALUE || parsedValue > MAX_VALUE) {
-                throw new NumericFieldParseException("Coordinate x must be between -2,147,483,648 and 2,147,483,647.");
+                throw new NumericFieldParseException(fieldFullName + " must be between -2,147,483,648 and 2,147,483,647.");
             }
             return parsedValue;
         } catch (NumberFormatException e) {
-            throw JsonMappingException.from(p, "Invalid format for coordinate x. Expected a valid numeric value between -2,147,483,648 and 2,147,483,647.");
+            throw JsonMappingException.from(p, "Invalid format for " + fieldFullName + ". Expected a valid numeric value between -2,147,483,648 and 2,147,483,647.");
         }
     }
 }

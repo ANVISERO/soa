@@ -4,7 +4,6 @@ import com.anvisero.movieservice.deserializer.ColorEnumLengthRestrictedDeseriali
 import com.anvisero.movieservice.deserializer.CountryEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.model.enums.Country;
-import com.anvisero.movieservice.validation.OnUpdate;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
@@ -16,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -24,8 +22,6 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-
 @JacksonXmlRootElement(localName = "Person")
 public class PersonDto {
     @NotBlank(message = "Person's name can not be empty")

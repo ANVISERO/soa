@@ -1,5 +1,6 @@
 package com.anvisero.movieservice.exception.handler;
 
+import com.anvisero.movieservice.exception.FilterEnumValidationException;
 import com.anvisero.movieservice.exception.NumericFieldParseException;
 import com.anvisero.movieservice.exception.model.DefaultErrorResponse;
 import com.anvisero.movieservice.exception.model.InvalidField;
@@ -10,6 +11,7 @@ import com.anvisero.movieservice.model.enums.MovieGenre;
 import com.anvisero.movieservice.model.enums.MpaaRating;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,14 +22,16 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -42,7 +46,6 @@ public class ApplicationExceptionHandler {
         System.out.println();
         Throwable cause = ex.getMostSpecificCause();
         if (cause instanceof JsonMappingException jsonEx) {
-            System.out.println(cause.getMessage());
             String fullPath = extractFieldPath(jsonEx);
             String simplifiedReason = simplifyErrorMessage(jsonEx.getOriginalMessage());
 
@@ -136,8 +139,64 @@ public class ApplicationExceptionHandler {
         return new ResponseEntity<>(response, headers, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ValidationErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        ValidationErrorResponse response = ValidationErrorResponse.builder().build();
+        if (ex.getMessage().contains("Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'")) {
+            response.setInvalidFields(List.of(InvalidField.builder().name("id").reason("Invalid input for ID: must be a positive number less then 9,223,372,036,854,775,807").build()));
+        }
+        response.setMessage("Bad Request");
+        response.setTime(LocalDateTime.now());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<DefaultErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+        DefaultErrorResponse response = DefaultErrorResponse.builder()
+                .message("Not Found")
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        ValidationErrorResponse response = ValidationErrorResponse.builder().message("Bad Request")
+                .invalidFields(List.of(InvalidField.builder().name("id").reason("Invalid input for ID: must be a positive number less then 9,223,372,036,854,775,807").build()))
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FilterEnumValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> handleFilterEnumValidationException(FilterEnumValidationException ex) {
+        ValidationErrorResponse response = ValidationErrorResponse.builder().message("Bad Request")
+                .invalidFields(List.of(InvalidField.builder().name(ex.getFieldName()).reason(ex.getMessage()).build()))
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<DefaultErrorResponse> handleMethodArgumentNotValidException(RuntimeException ex) {
+    public ResponseEntity<DefaultErrorResponse> handleRuntimeException(RuntimeException ex) {
+        System.out.println(ex.getMessage());
+        System.out.println(ex.getClass());
         DefaultErrorResponse response = DefaultErrorResponse.builder()
                 .message("Internal Server Error")
                 .time(LocalDateTime.now())
@@ -146,7 +205,7 @@ public class ApplicationExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
 
-        return new ResponseEntity<>(response, headers, HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(response, headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private InvalidField mapFieldError(FieldError fieldError) {
@@ -157,10 +216,29 @@ public class ApplicationExceptionHandler {
     }
 
     private String extractFieldPath(JsonMappingException ex) {
-        return ex.getPath().stream()
-                .map(JsonMappingException.Reference::getFieldName)
-                .collect(Collectors.joining("."));
+        List<String> pathElements = ex.getPath().stream()
+                .map(reference -> {
+                    if (reference.getFieldName() != null) {
+                        return reference.getFieldName();
+                    } else if (reference.getIndex() != -1) {
+                        return "[" + reference.getIndex() + "]";
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        for (int i = 1; i < pathElements.size(); i++) {
+            if (pathElements.get(i).startsWith("[")) {
+                pathElements.set(i - 1, pathElements.get(i - 1) + pathElements.get(i));
+                pathElements.remove(i);
+                i--;
+            }
+        }
+
+        return String.join(".", pathElements);
     }
+
 
     private String simplifyErrorMessage(String originalMessage) {
         if (originalMessage.contains("Cannot deserialize value of type")) {
@@ -176,7 +254,7 @@ public class ApplicationExceptionHandler {
             } else if (originalMessage.contains("Integer")) {
                 return "Invalid number format. Integer value expected.";
             }
-        }  else if (originalMessage.contains("java.time.format.DateTimeParseException")) {
+        } else if (originalMessage.contains("java.time.format.DateTimeParseException")) {
             return "Invalid date format. Expected format: yyyy-MM-dd.";
         } else if (originalMessage.contains("Value length exceeds maximum allowed limit")
                 || originalMessage.contains("Please specify")

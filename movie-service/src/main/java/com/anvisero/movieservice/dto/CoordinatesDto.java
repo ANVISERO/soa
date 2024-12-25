@@ -1,7 +1,7 @@
 package com.anvisero.movieservice.dto;
 
-import com.anvisero.movieservice.deserializer.CoordinateXDeserializer;
-import com.anvisero.movieservice.deserializer.CoordinateYDeserializer;
+import com.anvisero.movieservice.deserializer.DoubleDeserializer;
+import com.anvisero.movieservice.deserializer.IntegerDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
@@ -10,22 +10,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @JacksonXmlRootElement(localName = "Coordinate")
 public class CoordinatesDto {
     @NotNull(message = "Specify the x coordinate")
-    @JsonDeserialize(using = CoordinateXDeserializer.class)
+    @JsonDeserialize(using = DoubleDeserializer.class)
     @JacksonXmlProperty(localName = "x")
     private Double x;
 
     @NotNull(message = "Specify the y coordinate")
-    @JsonDeserialize(using = CoordinateYDeserializer.class)
+    @JsonDeserialize(using = IntegerDeserializer.class)
     @JacksonXmlProperty(localName = "y")
     private Integer y;
 }
