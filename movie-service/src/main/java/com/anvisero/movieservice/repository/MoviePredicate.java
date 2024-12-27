@@ -1,7 +1,6 @@
 package com.anvisero.movieservice.repository;
 
 import com.anvisero.movieservice.dto.Filter;
-import com.anvisero.movieservice.dto.enums.FilterType;
 import com.anvisero.movieservice.model.Movie;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.model.enums.Country;

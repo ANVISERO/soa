@@ -13,11 +13,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -41,7 +44,7 @@ public class MovieDto {
     private CoordinatesDto coordinates;
 
     @NotNull(message = "Number of Oscars cannot be empty")
-    @Positive(message = "Number of Oscars must be greater than zero")
+    @PositiveOrZero(message = "Number of Oscars must be positive or zero")
     @Max(value = 100, message = "Number of Oscars cannot be more than 100")
     @JacksonXmlProperty(localName = "oscarsCount")
     private Long oscarsCount;

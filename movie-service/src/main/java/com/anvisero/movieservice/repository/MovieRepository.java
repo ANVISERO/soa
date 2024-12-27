@@ -11,6 +11,8 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long>, QuerydslPredicateExecutor<Movie>, QuerydslBinderCustomizer<QMovie> {
     @Override
@@ -18,4 +20,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, QuerydslPre
         bindings.bind(String.class)
                 .first((SingleValueBinding<StringPath, String>) StringExpression::containsIgnoreCase);
     }
+
+    List<Movie> findByDurationGreaterThan(Integer minLength);
 }

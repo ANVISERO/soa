@@ -144,6 +144,8 @@ public class ApplicationExceptionHandler {
         ValidationErrorResponse response = ValidationErrorResponse.builder().build();
         if (ex.getMessage().contains("Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'")) {
             response.setInvalidFields(List.of(InvalidField.builder().name("id").reason("Invalid input for ID: must be a positive number less then 9,223,372,036,854,775,807").build()));
+        } else if (ex.getMessage().contains("Failed to convert value of type 'java.lang.String' to required type 'java.lang.Integer'")) {
+            response.setInvalidFields(List.of(InvalidField.builder().name("id").reason("Invalid input for ID: must be a positive number less then 2,147,483,647").build()));
         }
         response.setMessage("Bad Request");
         response.setTime(LocalDateTime.now());

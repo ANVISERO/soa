@@ -5,6 +5,8 @@ logging:
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+server:
+  port: 8080
 
 spring:
   application:
@@ -14,7 +16,7 @@ spring:
       on-profile: default
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+#    url: jdbc:postgresql://localhost:5432/postgres
 #    username: soa
 #    password: soa
   jpa:

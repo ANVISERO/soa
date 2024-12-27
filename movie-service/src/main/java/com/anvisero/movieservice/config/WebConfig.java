@@ -47,4 +47,6 @@ public class WebConfig {
         // Создаём и возвращаем HTTP Message Converter
         return new MappingJackson2XmlHttpMessageConverter(xmlMapper);
     }
+
+
 }

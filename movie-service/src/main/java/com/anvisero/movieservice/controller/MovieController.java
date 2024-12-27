@@ -1,8 +1,11 @@
 package com.anvisero.movieservice.controller;
 
 import com.anvisero.movieservice.dto.FilterRequest;
+import com.anvisero.movieservice.dto.LoosersResponseList;
 import com.anvisero.movieservice.dto.MovieDto;
+import com.anvisero.movieservice.dto.MoviesHonoredByLengthResponse;
 import com.anvisero.movieservice.dto.SearchResponse;
+import com.anvisero.movieservice.service.DirectorService;
 import com.anvisero.movieservice.service.MovieService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class MovieController {
 
     private final MovieService movieService;
+    private final DirectorService directorService;
 
-    public MovieController(MovieService movieService) {
+    public MovieController(MovieService movieService, DirectorService directorService) {
         this.movieService = movieService;
+        this.directorService = directorService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
@@ -45,7 +51,7 @@ public class MovieController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<MovieDto> getMovieById(
+    public ResponseEntity<MovieDto> updateMovie(
             @PathVariable
             @Min(value = 1, message = "ID must be greater than 0")
             @Max(value = Long.MAX_VALUE, message = "ID must be less than or equal to " + Long.MAX_VALUE) Long id,
@@ -73,5 +79,21 @@ public class MovieController {
     public ResponseEntity<MovieDto> getScreenwriterMax() {
         MovieDto movieResponse = movieService.getScreenwriterMax();
         return ResponseEntity.ok().body(movieResponse);
+    }
+
+    @GetMapping(value = "/directors/get-loosers", produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<LoosersResponseList> getLosers() {
+        LoosersResponseList personResponse = directorService.getLosers();
+        return ResponseEntity.ok().body(personResponse);
+    }
+
+    @PatchMapping(value = "/honor-by-length/{min-length}/oscars-to-add", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<MoviesHonoredByLengthResponse> additionallyAward(
+            @PathVariable("min-length")
+            @Min(value = 1, message = "ID must be greater than 0")
+            @Max(value = Long.MAX_VALUE, message = "ID must be less than or equal to " + Long.MAX_VALUE)
+            Integer minLength) {
+        MoviesHonoredByLengthResponse personResponse = movieService.additionallyAward(minLength);
+        return ResponseEntity.ok().body(personResponse);
     }
 }

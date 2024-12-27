@@ -1,6 +1,5 @@
 package com.anvisero.movieservice.filter;
 
-import com.anvisero.movieservice.exception.UriTooLongException;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,11 +34,11 @@ public class UrlLengthFilter implements Filter {
             httpResponse.getWriter().write(
                     String.format(
                             """
-                            <Error>
-                                <message>URI length exceeds the maximum allowed limit of %d characters.</message>
-                                <time>%s</time>
-                            </Error>
-                            """,
+                                    <Error>
+                                        <message>URI length exceeds the maximum allowed limit of %d characters.</message>
+                                        <time>%s</time>
+                                    </Error>
+                                    """,
                             MAX_URL_LENGTH,
                             LocalDateTime.now().format(formatter)
                     )
