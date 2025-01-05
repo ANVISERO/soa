@@ -99,6 +99,12 @@ public class MovieService {
                     .toList();
         }
         Pageable pageable;
+        if (movieRequest.getPage() == null) {
+            movieRequest.setPage(0);
+        }
+        if (movieRequest.getPageSize() == null) {
+            movieRequest.setPageSize(10);
+        }
         if (orders != null) {
             pageable = PageRequest.of(movieRequest.getPage(), movieRequest.getPageSize(), Sort.by(orders));
         } else {
@@ -121,6 +127,17 @@ public class MovieService {
 
         int totalPages = moviePage.getTotalPages();
 
+        return new SearchResponse(movieDtos, totalPages);
+    }
+
+    public SearchResponse searchDefault() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Movie> moviePage = movieRepository.findAll(pageable);
+        List<MovieDto> movieDtos = moviePage.getContent().stream()
+                .map(MovieMapper::movieToMovieResponse)
+                .collect(Collectors.toList());
+
+        int totalPages = moviePage.getTotalPages();
         return new SearchResponse(movieDtos, totalPages);
     }
 

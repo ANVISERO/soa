@@ -70,8 +70,14 @@ public class MovieController {
     }
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<SearchResponse> search(@Validated @RequestBody FilterRequest movieRequest) {
-        SearchResponse searchResponse = movieService.search(movieRequest);
+    public ResponseEntity<SearchResponse> search(@Validated @RequestBody(required = false) FilterRequest movieRequest) {
+        SearchResponse searchResponse;
+        if (movieRequest == null) {
+            searchResponse =  movieService.searchDefault();
+        } else {
+            FilterRequest movieRequestValidated = getValidatedRequest(movieRequest);
+            searchResponse = movieService.search(movieRequestValidated);
+        }
         return ResponseEntity.ok().body(searchResponse);
     }
 
@@ -95,5 +101,9 @@ public class MovieController {
             Integer minLength) {
         MoviesHonoredByLengthResponse personResponse = movieService.additionallyAward(minLength);
         return ResponseEntity.ok().body(personResponse);
+    }
+
+    private FilterRequest getValidatedRequest(@Validated FilterRequest  movieRequest) {
+        return movieRequest;
     }
 }
