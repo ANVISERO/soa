@@ -1,6 +1,7 @@
 package com.anvisero.movieservice.util;
 
 import com.anvisero.movieservice.dto.MovieDto;
+import com.anvisero.movieservice.dto.MovieDtoResponse;
 import com.anvisero.movieservice.model.Movie;
 import lombok.experimental.UtilityClass;
 
@@ -28,16 +29,17 @@ public class MovieMapper {
         return movie.build();
     }
 
-    public MovieDto movieToMovieResponse(Movie movie) {
+    public MovieDtoResponse movieToMovieResponse(Movie movie) {
         if (movie == null) {
             return null;
         }
 
-        MovieDto movieDto = new MovieDto();
+        MovieDtoResponse movieDto = new MovieDtoResponse();
 
         movieDto.setId(movie.getId());
         movieDto.setName(movie.getName());
         movieDto.setCoordinates(CoordinatesMapper.coordinatesToCoordinatesResponse(movie.getCoordinates()));
+        movieDto.setCreationDate(movie.getCreationDate());
         movieDto.setOscarsCount(movie.getOscarsCount());
         movieDto.setGenre(movie.getGenre());
         movieDto.setMpaaRating(movie.getMpaaRating());

@@ -23,6 +23,7 @@ import static com.anvisero.movieservice.dto.enums.FieldType.COORDINATE_X;
 import static com.anvisero.movieservice.dto.enums.FieldType.COORDINATE_Y;
 import static com.anvisero.movieservice.dto.enums.FieldType.DURATION;
 import static com.anvisero.movieservice.dto.enums.FieldType.GENRE;
+import static com.anvisero.movieservice.dto.enums.FieldType.ID;
 import static com.anvisero.movieservice.dto.enums.FieldType.MPAA_RATING;
 import static com.anvisero.movieservice.dto.enums.FieldType.OSCARS_COUNT;
 import static com.anvisero.movieservice.dto.enums.FieldType.SCREENWRITER_BIRTHDAY;
@@ -54,7 +55,7 @@ public class MoviePredicate {
                 case LTE:
                     return path.loe(value);
             }
-        } else if (isLong(filter.getValue().toString()) && filter.getField() == OSCARS_COUNT) {
+        } else if (isLong(filter.getValue().toString()) && (filter.getField() == OSCARS_COUNT || filter.getField() == ID)) {
             NumberPath<Long> path = entityPath.getNumber(filter.getField().toString(), Long.class);
             long value = Long.parseLong(filter.getValue().toString());
             switch (filter.getFilterType()) {
@@ -105,7 +106,7 @@ public class MoviePredicate {
                 case LTE:
                     return path.loe(value);
             }
-        } else if (isLocalDate(filter.getValue().toString()) && filter.getField() == SCREENWRITER_BIRTHDAY) {
+        } else if (filter.getField() == SCREENWRITER_BIRTHDAY && isLocalDate(filter.getValue().toString())) {
             DatePath<LocalDate> path = entityPath.getDate(filter.getField().toString(), LocalDate.class);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate value = LocalDate.parse(filter.getValue().toString(), formatter);

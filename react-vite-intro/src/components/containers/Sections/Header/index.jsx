@@ -23,7 +23,7 @@ function Header(props) {
     // }
 
     return (
-        <div>
+        <>
             <AppContainer enabled={props.container}>
                 <div className="header__container">
                     <div className="header__navigation">
@@ -34,16 +34,9 @@ function Header(props) {
                             {props.children}
                         </div>
                     </div>
-
-                    {/*<div className="burger__menu__container" id="burger-menu-container" onClick={() => {*/}
-                    {/*    setActive(!active);*/}
-                    {/*}}>*/}
-                    {/*    <div className="burger__menu burger__menu__1"></div>*/}
-                    {/*    <div className="burger__menu burger__menu__2"></div>*/}
-                    {/*</div>*/}
                 </div>
             </AppContainer>
-        </div>
+        </>
     );
 
 }

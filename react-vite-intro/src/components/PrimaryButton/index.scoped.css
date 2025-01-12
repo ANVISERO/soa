@@ -95,6 +95,7 @@
 
 .red__button:hover .button__icon {
     fill: var(--background);
+    /*fill: var(--background);*/
 }
 @media (max-width: 1000px) {
     .default__button {

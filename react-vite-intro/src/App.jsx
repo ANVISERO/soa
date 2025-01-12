@@ -21,12 +21,12 @@ function App() {
         [
             {
                 path: "/",
-                element: <Movie pageSize = {5} />,
+                element: <Movie />,
                 errorElement: <NotFound />
             },
             {
                 path: "/movies",
-                element: <Movie pageSize = {5}/>,
+                element: <Movie />,
                 errorElement: <NotFound />
             }
             // {
@@ -38,19 +38,9 @@ function App() {
     );
 
     return (
-        //   <AppBody>
-        //       <Header>
-        //       </Header>
-        //     <div className="card">
-        //         <button onClick={() => setCount((count) => count + 1)}>
-        //             count is {count}
-        //         </button>
-        //     </div>
-        //       <Footer/>
-        // </AppBody>
         <RouterProvider router={router}>
-            <Route path='/' element={<Movie pageSize = {5}/>}/>
-            <Route path='/movies' element={<Movie pageSize = {5}/>}/>
+            <Route path='/' element={<Movie />}/>
+            <Route path='/movies' element={<Movie />}/>
             {/*<Route path='/not' element={<NotFound/>}/>*/}
         </RouterProvider>
     )

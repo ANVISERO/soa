@@ -68,7 +68,6 @@ input {
   border-radius: 0.5rem;
   min-width: 180px;
   width: 100%;
-  height: 54px;
   background: var(--secondary);
 }
 
@@ -92,7 +91,7 @@ select {
 }
 
 .button {
-  width: 200px;
+  width: 150px;
 }
 
 .title {
@@ -358,3 +357,19 @@ input {
     width: 320px;
   }
 }
+
+.ant-table-wrapper {
+  overflow-x: hidden; /* Убираем горизонтальный скролл */
+}
+
+.ant-table {
+  table-layout: fixed; /* Фиксированная ширина колонок */
+  width: 100%; /* Таблица занимает всю доступную ширину */
+}
+
+.ant-table th, .ant-table td {
+  white-space: nowrap; /* Отключаем перенос текста */
+  overflow: hidden; /* Убираем переполнение */
+  text-overflow: ellipsis; /* Добавляем троеточие для длинного текста */
+}
+

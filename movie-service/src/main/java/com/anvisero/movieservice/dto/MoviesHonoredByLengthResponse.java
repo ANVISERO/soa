@@ -18,5 +18,5 @@ import java.util.List;
 public class MoviesHonoredByLengthResponse {
     @JacksonXmlElementWrapper(localName = "movies")
     @JacksonXmlProperty(localName = "movie")
-    List<MovieDto> movies;
+    List<MovieDtoResponse> movies;
 }

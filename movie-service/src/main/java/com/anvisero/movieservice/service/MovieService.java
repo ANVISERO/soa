@@ -3,12 +3,17 @@ package com.anvisero.movieservice.service;
 import com.anvisero.movieservice.dto.Filter;
 import com.anvisero.movieservice.dto.FilterRequest;
 import com.anvisero.movieservice.dto.MovieDto;
+import com.anvisero.movieservice.dto.MovieDtoResponse;
 import com.anvisero.movieservice.dto.MoviesHonoredByLengthResponse;
 import com.anvisero.movieservice.dto.SearchResponse;
 import com.anvisero.movieservice.model.Coordinates;
 import com.anvisero.movieservice.model.Movie;
 import com.anvisero.movieservice.model.Person;
 import com.anvisero.movieservice.model.QMovie;
+import com.anvisero.movieservice.model.enums.Color;
+import com.anvisero.movieservice.model.enums.Country;
+import com.anvisero.movieservice.model.enums.MovieGenre;
+import com.anvisero.movieservice.model.enums.MpaaRating;
 import com.anvisero.movieservice.repository.MoviePredicatesBuilder;
 import com.anvisero.movieservice.repository.MovieRepository;
 import com.anvisero.movieservice.util.MovieMapper;
@@ -38,21 +43,21 @@ public class MovieService {
     }
 
     @Transactional
-    public MovieDto addMovie(MovieDto movieDto) {
+    public MovieDtoResponse addMovie(MovieDto movieDto) {
         Movie movie = movieRepository.save(MovieMapper.movieRequestToMovie(movieDto));
-        MovieDto movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
+        MovieDtoResponse movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
         return movieDtoResponse;
     }
 
     @Transactional(readOnly = true)
-    public MovieDto getMovieById(Long movieId) {
+    public MovieDtoResponse getMovieById(Long movieId) {
         Movie movie = movieRepository.getReferenceById(movieId);
-        MovieDto movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
+        MovieDtoResponse movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
         return movieDtoResponse;
     }
 
     @Transactional
-    public MovieDto updateMovie(Long movieId, MovieDto movieDto) {
+    public MovieDtoResponse updateMovie(Long movieId, MovieDto movieDto) {
         Movie movie = movieRepository.getReferenceById(movieId);
 
         movie.setName(movieDto.getName());
@@ -73,7 +78,7 @@ public class MovieService {
         movie.setDuration(movieDto.getDuration());
 
         Movie savedMovie = movieRepository.save(movie);
-        MovieDto movieDtoResponse = MovieMapper.movieToMovieResponse(savedMovie);
+        MovieDtoResponse movieDtoResponse = MovieMapper.movieToMovieResponse(savedMovie);
         return movieDtoResponse;
     }
 
@@ -121,7 +126,7 @@ public class MovieService {
             moviePage = movieRepository.findAll(moviePredicatesBuilder.build(), pageable);
         }
 
-        List<MovieDto> movieDtos = moviePage.getContent().stream()
+        List<MovieDtoResponse> movieDtos = moviePage.getContent().stream()
                 .map(MovieMapper::movieToMovieResponse)
                 .collect(Collectors.toList());
 
@@ -133,7 +138,7 @@ public class MovieService {
     public SearchResponse searchDefault() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Movie> moviePage = movieRepository.findAll(pageable);
-        List<MovieDto> movieDtos = moviePage.getContent().stream()
+        List<MovieDtoResponse> movieDtos = moviePage.getContent().stream()
                 .map(MovieMapper::movieToMovieResponse)
                 .collect(Collectors.toList());
 
@@ -141,7 +146,7 @@ public class MovieService {
         return new SearchResponse(movieDtos, totalPages);
     }
 
-    public MovieDto getScreenwriterMax() {
+    public MovieDtoResponse getScreenwriterMax() {
         QMovie movie = QMovie.movie;
 
         Predicate maxHeightPredicate = movie.screenwriter.height.eq(
@@ -167,10 +172,26 @@ public class MovieService {
             throw new EntityNotFoundException("Not found movie to award additionally");
         }
 
-        List<MovieDto> movieDtos = savedMovies.stream()
+        List<MovieDtoResponse> movieDtos = savedMovies.stream()
                 .map(MovieMapper::movieToMovieResponse)
                 .collect(Collectors.toList());
 
         return new MoviesHonoredByLengthResponse(movieDtos);
+    }
+
+    public List<Color> getColors() {
+        return List.of(Color.values());
+    }
+
+    public List<Country> getCountries() {
+        return List.of(Country.values());
+    }
+
+    public List<MovieGenre> getGenres() {
+        return List.of(MovieGenre.values());
+    }
+
+    public List<MpaaRating> getRatings() {
+        return List.of(MpaaRating.values());
     }
 }

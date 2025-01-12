@@ -18,7 +18,7 @@ import java.util.List;
 public class SearchResponse {
     @JacksonXmlElementWrapper(localName = "movies")
     @JacksonXmlProperty(localName = "movie")
-    List<MovieDto> movies;
+    List<MovieDtoResponse> movies;
 
     @JacksonXmlProperty(localName = "totalPages")
     Integer totalPages;

@@ -1,6 +1,6 @@
 logging:
   level:
-    ru.practicum.main: DEBUG
+    com.anvisero.movieservice: DEBUG
     org.springframework.orm.jpa: INFO
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: TRACE
