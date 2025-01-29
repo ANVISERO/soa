@@ -1,4 +1,4 @@
-package com.anvisero.movieservice.util;
+package com.anvisero.movieservice.util.mapper;
 
 import com.anvisero.movieservice.dto.MovieDto;
 import com.anvisero.movieservice.dto.MovieDtoResponse;

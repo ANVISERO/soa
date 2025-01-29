@@ -3,7 +3,7 @@ package com.anvisero.movieservice.service;
 import com.anvisero.movieservice.dto.LoosersResponseList;
 import com.anvisero.movieservice.model.Person;
 import com.anvisero.movieservice.repository.PersonRepository;
-import com.anvisero.movieservice.util.PersonMapper;
+import com.anvisero.movieservice.util.mapper.PersonMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

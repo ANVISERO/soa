@@ -8,6 +8,7 @@ import com.anvisero.movieservice.model.enums.MovieGenre;
 import com.anvisero.movieservice.model.enums.MpaaRating;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DatePath;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.EnumPath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -15,12 +16,14 @@ import com.querydsl.core.types.dsl.StringPath;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
 import static com.anvisero.movieservice.dto.enums.FieldType.COORDINATE_X;
 import static com.anvisero.movieservice.dto.enums.FieldType.COORDINATE_Y;
+import static com.anvisero.movieservice.dto.enums.FieldType.CREATION_DATE;
 import static com.anvisero.movieservice.dto.enums.FieldType.DURATION;
 import static com.anvisero.movieservice.dto.enums.FieldType.GENRE;
 import static com.anvisero.movieservice.dto.enums.FieldType.ID;
@@ -124,6 +127,27 @@ public class MoviePredicate {
                 case LTE:
                     return path.loe(value);
             }
+        } else if (filter.getField() == CREATION_DATE && isLocalDateTime(filter.getValue().toString())) {
+            DateTimePath<LocalDateTime> path = entityPath.getDateTime(filter.getField().toString(), LocalDateTime.class);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            LocalDateTime value = LocalDateTime.parse(filter.getValue().toString(), formatter);
+            LocalDateTime truncatedValue = value.withNano(0);
+            LocalDateTime start = truncatedValue;
+            LocalDateTime end = truncatedValue.plusSeconds(1);
+            switch (filter.getFilterType()) {
+                case EQ:
+                    return path.between(start, end);
+                case NE:
+                    return path.notBetween(start, end);
+                case GT:
+                    return path.goe(end);
+                case GTE:
+                    return path.goe(value);
+                case LT:
+                    return path.lt(truncatedValue);
+                case LTE:
+                    return path.lt(end);
+            }
         } else if (filter.getField() == GENRE) {
             EnumPath<MovieGenre> path = entityPath.getEnum(filter.getField().toString(), MovieGenre.class);
             MovieGenre value;
@@ -223,6 +247,17 @@ public class MoviePredicate {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate.parse(str, formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date format: " + str);
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isLocalDateTime(final String str) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            LocalDateTime.parse(str, formatter);
         } catch (DateTimeParseException e) {
             System.out.println("Invalid date format: " + str);
             return false;

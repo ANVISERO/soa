@@ -81,7 +81,7 @@ select {
     outline: none !important;
     border: none;
     width: 100%;
-    max-width: 180px;
+    max-width: 280px;
     height: 100%;
     font-weight: 600;
     border-radius: 0.5rem;
@@ -89,3 +89,7 @@ select {
     color: var(--text);
     background: transparent;
   }
+
+.custom-input {
+    width: 200px !important;
+}

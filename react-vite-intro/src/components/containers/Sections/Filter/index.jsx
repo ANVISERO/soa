@@ -10,76 +10,48 @@ const Filter = (props) => {
     const [filters, setFilters] = useState([{criteria: "id", operator: "EQ", value: ""}]);
     const [loading, setLoading] = useState(false);
     const [enumOptions, setEnumOptions] = useState({});
+    const [loadedEnums, setLoadedEnums] = useState(false);
 
     useEffect(() => {
-        const fetchEnums = async () => {
-            setLoading(true);
-            try {
-                const responses = await Promise.all([
-                    fetch("http://localhost:8080/api/v1/movies/colors").then((res) => res.text()),
-                    fetch("http://localhost:8080/api/v1/movies/countries").then((res) => res.text()),
-                    fetch("http://localhost:8080/api/v1/movies/genres").then((res) => res.text()),
-                    fetch("http://localhost:8080/api/v1/movies/ratings").then((res) => res.text()),
-                ]);
+        if (!loadedEnums) {
+            const fetchEnums = async () => {
+                setLoading(true);
+                try {
+                    const responses = await Promise.all([
+                        fetch("http://localhost:8765/api/v1/movies/colors").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/countries").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/genres").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/ratings").then((res) => res.text()),
+                    ]);
 
-                console.log(responses);
+                    const colors = parseEnumResponse(responses[0], "color");
+                    const countries = parseEnumResponse(responses[1], "country");
+                    const genres = parseEnumResponse(responses[2], "genre");
+                    const ratings = parseEnumResponse(responses[3], "rating");
 
-                const colors = parseEnumResponse(responses[0], "color");
-                const countries = parseEnumResponse(responses[1], "country");
-                const genres = parseEnumResponse(responses[2], "genre");
-                const ratings = parseEnumResponse(responses[3], "rating");
+                    setEnumOptions({
+                        "screenwriter.hairColor": colors,
+                        "screenwriter.nationality": countries,
+                        genre: genres,
+                        mpaaRating: ratings,
+                    });
 
-                setEnumOptions({
-                    "screenwriter.hairColor": colors,
-                    "screenwriter.nationality": countries,
-                    genre: genres,
-                    mpaaRating: ratings,
-                });
-                console.log(enumOptions);
+                    message.success("Все данные успешно загружены!");
+                    setLoadedEnums(true);  // Устанавливаем флаг о том, что данные загружены
+                } catch (error) {
+                    message.error(`Ошибка загрузки данных: ${error.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
 
+            fetchEnums();
+        }
+    }, [loadedEnums]);
 
-                message.success("Все данные успешно загружены!");
-            } catch (error) {
-                message.error(`Ошибка загрузки данных: ${error.message}`);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const createFilterXML = () => {
-            const xmlDocument = document.implementation.createDocument("", "", null);
-
-            const root = xmlDocument.createElement("filters");
-
-            for (const element of filters) {
-                const sortingElement = xmlDocument.createElement("filter");
-
-                const fieldElement = xmlDocument.createElement("field");
-                fieldElement.textContent = element.criteria;
-
-                const filterTypeElement = xmlDocument.createElement("filterType");
-                filterTypeElement.textContent = element.operator;
-
-                const valueElement = xmlDocument.createElement("value");
-                valueElement.textContent = element.value;
-
-                sortingElement.appendChild(fieldElement);
-                sortingElement.appendChild(filterTypeElement);
-                sortingElement.appendChild(valueElement);
-
-                root.appendChild(sortingElement);
-            }
-
-            xmlDocument.appendChild(root);
-
-            return new XMLSerializer().serializeToString(xmlDocument);
-        };
-
-        const xmlString = createFilterXML();
-        props.filtersUpdate(xmlString);
-
-        fetchEnums();
-    }, [filters, props]);
+    useEffect(() => {
+        props.filtersUpdate(filters);
+    }, [filters]);
 
     const parseEnumResponse = (xml, tag) => {
         const parser = new DOMParser();
@@ -101,13 +73,14 @@ const Filter = (props) => {
         {value: "screenwriter.hairColor", type: "enum"},
         {value: "screenwriter.nationality", type: "enum"},
         {value: "duration", type: "number"},
-        {value: "creationDate", type: "date"},
+        {value: "creationDate", type: "dateTime"},
     ];
 
     const operatorOptions = {
         number: ["EQ", "NE", "GT", "GTE", "LT", "LTE"],
         string: ["EQ", "NE", "SUBSTR", "NSUBSTR"],
         date: ["EQ", "NE", "GT", "GTE", "LT", "LTE"],
+        dateTime: ["EQ", "NE", "GT", "GTE", "LT", "LTE"],
         enum: ["EQ", "NE"],
     };
 
@@ -142,9 +115,12 @@ const Filter = (props) => {
 
     const handleFilterCriteriaChange = (index, value) => {
         const newFilters = [...filters];
+        const type = criteriaOptions.find((option) => option.value === value)?.type;
+
         newFilters[index].criteria = value;
         newFilters[index].operator = "EQ";
-        newFilters[index].value = "";
+        newFilters[index].value = type === "enum" ? (enumOptions[value]?.[0] || "") : "";
+
         setFilters(newFilters);
     };
 
@@ -188,17 +164,42 @@ const Filter = (props) => {
                             </Select>
                         </div>
                         <div className="select__box">
-                            {criteriaType === "date" ? (
+                            {criteriaType === "date" || criteriaType === "dateTime" ? (
                                 <DatePicker
-                                    value={filter.value && dayjs(filter.value).isValid() ? dayjs(filter.value) : null}
-                                    onChange={(date) => handleFilterChange(index, date ? dayjs(date).toISOString() : "")}
-                                    style={{width: "100%"}}
-                                    format="YYYY-MM-DD"
+                                    value={
+                                        filter.value &&
+                                        dayjs(
+                                            filter.value,
+                                            criteriaType === "dateTime" ? "YYYY-MM-DDTHH:mm:ss" : "YYYY-MM-DD"
+                                        ).isValid()
+                                            ? dayjs(
+                                                filter.value,
+                                                criteriaType === "dateTime" ? "YYYY-MM-DDTHH:mm:ss" : "YYYY-MM-DD"
+                                            )
+                                            : null
+                                    }
+                                    onChange={(date) =>
+                                        handleFilterChange(
+                                            index,
+                                            date
+                                                ? dayjs(date).format(
+                                                    criteriaType === "dateTime" ? "YYYY-MM-DDTHH:mm:ss" : "YYYY-MM-DD"
+                                                )
+                                                : ""
+                                        )
+                                    }
+                                    style={{width: 200}}
+                                    format={criteriaType === "dateTime" ? "YYYY-MM-DDTHH:mm:ss" : "YYYY-MM-DD"}
+                                    showTime={
+                                        criteriaType === "dateTime"
+                                            ? {format: "HH:mm:ss", defaultValue: dayjs("00:00:00", "HH:mm:ss")}
+                                            : false
+                                    }
                                 />
                             ) : criteriaType === "enum" ? (
                                 <Select
                                     style={{width: 200}}
-                                    value={filter.value}
+                                    value={filter.value || (enumOptions[filter.criteria]?.[0] || "")}
                                     onChange={(value) => handleFilterChange(index, value)}
                                 >
                                     {(enumOptions[filter.criteria] || []).map((option) => (
@@ -209,10 +210,15 @@ const Filter = (props) => {
                                 </Select>
                             ) : (
                                 <Input
+                                    style={{ borderColor: props.emptyFields.includes(filter.criteria) ? "red" : undefined }}
+                                    onFocus={() => {
+                                        props.setEmptyFields((prev) => prev.filter((item) => item !== filter.criteria));
+                                    }}
                                     type="text"
                                     value={filter.value}
                                     onChange={(e) => handleFilterChange(index, e.target.value)}
                                     placeholder="Input value"
+                                    className="custom-input"
                                 />
                             )}
                         </div>

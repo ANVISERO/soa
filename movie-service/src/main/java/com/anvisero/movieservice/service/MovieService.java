@@ -16,7 +16,7 @@ import com.anvisero.movieservice.model.enums.MovieGenre;
 import com.anvisero.movieservice.model.enums.MpaaRating;
 import com.anvisero.movieservice.repository.MoviePredicatesBuilder;
 import com.anvisero.movieservice.repository.MovieRepository;
-import com.anvisero.movieservice.util.MovieMapper;
+import com.anvisero.movieservice.util.mapper.MovieMapper;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPAExpressions;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -44,7 +45,9 @@ public class MovieService {
 
     @Transactional
     public MovieDtoResponse addMovie(MovieDto movieDto) {
-        Movie movie = movieRepository.save(MovieMapper.movieRequestToMovie(movieDto));
+        Movie movie = MovieMapper.movieRequestToMovie(movieDto);
+        movie.setCreationDate(LocalDateTime.now());
+        Movie savedMovie = movieRepository.save(movie);
         MovieDtoResponse movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
         return movieDtoResponse;
     }

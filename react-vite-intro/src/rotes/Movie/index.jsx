@@ -69,11 +69,15 @@ function Movie() {
     const [totalCount, setTotalCount] = useState(0);
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isInitialLoad, setInitialLoad] = useState(true);
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [sortParams, setSortParams] = useState("");
-    const [filterParams, setFilterParams] = useState("");
+    const [isMounted, setMounted] = useState(false);
+    const [emptyFilters, setEmptyFilters] = useState([]);
+    // const [filterParams, setFilterParams] = useState("");
+    const [filters, setFilters] = useState([{criteria: "id", operator: "EQ", value: ""}]);
 
     function addToScroll() {
         setBlockedScroll(blockedScroll + 1);
@@ -81,6 +85,33 @@ function Movie() {
 
     function removeToScroll() {
         setBlockedScroll(blockedScroll - 1);
+    }
+
+    function createFilterXML(filters) {
+        const xmlDocument = document.implementation.createDocument("", "", null);
+        const root = xmlDocument.createElement("filters");
+
+        for (const element of filters) {
+            const filterElement = xmlDocument.createElement("filter");
+
+            const fieldElement = xmlDocument.createElement("field");
+            fieldElement.textContent = element.criteria;
+
+            const filterTypeElement = xmlDocument.createElement("filterType");
+            filterTypeElement.textContent = element.operator;
+
+            const valueElement = xmlDocument.createElement("value");
+            valueElement.textContent = element.value;
+
+            filterElement.appendChild(fieldElement);
+            filterElement.appendChild(filterTypeElement);
+            filterElement.appendChild(valueElement);
+
+            root.appendChild(filterElement);
+        }
+
+        xmlDocument.appendChild(root);
+        return new XMLSerializer().serializeToString(xmlDocument);
     }
 
     const columns = [
@@ -235,20 +266,18 @@ function Movie() {
         },
     ];
 
-    const sendXmlRequest = async () => {
+    const sendInitialXmlRequest = async () => {
         setLoading(true);
 
         const xmlInput = `
         <FilterRequest>
             <page>${currentPage - 1}</page>
             <pageSize>${pageSize}</pageSize>
-            ${sortParams}
-            ${filterParams}
         </FilterRequest>
     `;
 
         try {
-            const response = await fetch("http://localhost:8080/api/v1/movies/search", {
+            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/xml",
@@ -261,27 +290,88 @@ function Movie() {
             }
 
             const responseText = await response.text();
+            const { movies, totalPages } = parseSearchResponse(responseText);
 
-            const {movies, totalPages} = parseSearchResponse(responseText);
-            console.log(movies);
             setMovies(movies);
-            if (totalPages >= pageSize) {
-                throw new Error(`Incorrect page number for page size = {pageSize}`);
-            }
             setTotalCount(totalPages * pageSize);
+            setTotalPages(totalPages);
 
             message.success("Данные успешно получены!");
         } catch (error) {
             message.error(`Ошибка запроса: ${error.message}`);
         } finally {
             setLoading(false);
+            setInitialLoad(false); // Обновляем состояние после успешного завершения
+        }
+    };
+
+    const sendXmlRequest = async () => {
+        // if (filters.some(element => !element.value || element.value.trim() === "")) {
+        //     const emptyFields = filters.filter(element => !element.value || element.value.trim() === "");
+        //     const fieldNames = emptyFields.map(element => `"${element.criteria}"`).join(", ");
+        //     message.error(`Пожалуйста, заполните поля: ${fieldNames}`);
+        //     return;
+        // }
+        // Определяем пустые фильтры
+        const emptyFields = filters.filter(element => !element.value || element.value.trim() === "");
+        const emptyFieldNames = emptyFields.map(element => element.criteria);
+
+        // Если есть пустые поля, сохраняем их в `emptyFilters` и выводим ошибку
+        if (emptyFields.length > 0) {
+            setEmptyFilters(emptyFieldNames);
+            message.error(`Пожалуйста, заполните поля: ${emptyFieldNames.join(", ")}`);
+            return;
+        }
+
+        // Если ошибок нет, сбрасываем `emptyFilters`
+        setEmptyFilters([]);
+
+        setLoading(true);
+
+        const xmlInput = `
+        <FilterRequest>
+            <page>${currentPage - 1}</page>
+            <pageSize>${pageSize}</pageSize>
+            ${sortParams}
+            ${createFilterXML(filters)}
+        </FilterRequest>
+    `;
+
+        try {
+            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/xml",
+                },
+                body: xmlInput
+            });
+
+            if (!response.ok) {
+                throw new Error(`Ошибка: ${response.statusText}`);
+            }
+
+            const responseText = await response.text();
+            const { movies, totalPages } = parseSearchResponse(responseText);
+
+            setMovies(movies);
+            setTotalCount(totalPages * pageSize);
+            setTotalPages(totalPages);
+
+            message.success("Данные успешно получены!");
+        } catch (error) {
+            message.error(`Ошибка запроса: ${error.message}`);
+        } finally {
+            setLoading(false);
+            setInitialLoad(false); // Обновляем состояние после успешного завершения
         }
     };
 
     useEffect(() => {
-        sendXmlRequest();
+        if (!isMounted) {
+            sendInitialXmlRequest();
+            setMounted(true);
+        }
     }, []);
-
 
     function changePageSize(value) {
         setPageSize(value);
@@ -309,8 +399,11 @@ function Movie() {
         setSortParams(params.slice());
     }
 
+    // function setFilterString(params) {
+    //     setFilterParams(params.slice());
+    // }
     function setFilterString(params) {
-        setFilterParams(params.slice());
+        setFilters(params.slice());
     }
 
     return (
@@ -374,7 +467,7 @@ function Movie() {
                 </div>
 
                 <div className="wrapper filter">
-                    <Filter filtersUpdate={setFilterString}>
+                    <Filter filtersUpdate={setFilterString} emptyFields={emptyFilters} setEmptyFields={setEmptyFilters} >
                         <Select.Option value="id">ID</Select.Option>
                         <Select.Option value="name">Name</Select.Option>
                         <Select.Option value="coordinates.x">X</Select.Option>

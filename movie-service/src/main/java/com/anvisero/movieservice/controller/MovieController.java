@@ -13,6 +13,7 @@ import com.anvisero.movieservice.dto.SearchResponse;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.service.DirectorService;
 import com.anvisero.movieservice.service.MovieService;
+import com.anvisero.movieservice.util.validator.SearchRequestValidator;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.extern.slf4j.Slf4j;
@@ -110,8 +111,8 @@ public class MovieController {
         if (movieRequest == null) {
             searchResponse =  movieService.searchDefault();
         } else {
-            FilterRequest movieRequestValidated = getValidatedRequest(movieRequest);
-            searchResponse = movieService.search(movieRequestValidated);
+            SearchRequestValidator.validateSearchRequest(movieRequest);
+            searchResponse = movieService.search(movieRequest);
         }
         return ResponseEntity.ok().body(searchResponse);
     }
@@ -136,9 +137,5 @@ public class MovieController {
             Integer minLength) {
         MoviesHonoredByLengthResponse personResponse = movieService.additionallyAward(minLength);
         return ResponseEntity.ok().body(personResponse);
-    }
-
-    private FilterRequest getValidatedRequest(@Validated FilterRequest  movieRequest) {
-        return movieRequest;
     }
 }

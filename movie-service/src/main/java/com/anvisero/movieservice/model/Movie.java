@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Setter
@@ -61,4 +62,9 @@ public class Movie {
 
     @Column(name = "duration")
     private Integer duration;
+
+//    public void setCreationDate(LocalDateTime dateTime) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+//        this.creationDate = LocalDateTime.parse(dateTime.format(formatter));
+//    }
 }

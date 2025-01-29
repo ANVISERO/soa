@@ -5,6 +5,7 @@ import com.anvisero.movieservice.exception.NumericFieldParseException;
 import com.anvisero.movieservice.exception.model.DefaultErrorResponse;
 import com.anvisero.movieservice.exception.model.InvalidField;
 import com.anvisero.movieservice.exception.model.ValidationErrorResponse;
+import com.anvisero.movieservice.exception.parse.ParsingException;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.model.enums.Country;
 import com.anvisero.movieservice.model.enums.MovieGenre;
@@ -186,6 +187,19 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ValidationErrorResponse> handleFilterEnumValidationException(FilterEnumValidationException ex) {
         ValidationErrorResponse response = ValidationErrorResponse.builder().message("Bad Request")
                 .invalidFields(List.of(InvalidField.builder().name(ex.getFieldName()).reason(ex.getMessage()).build()))
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ParsingException.class)
+    public ResponseEntity<ValidationErrorResponse> handleLongParsingException(ParsingException ex) {
+        ValidationErrorResponse response = ValidationErrorResponse.builder().message("Bad Request")
+                .invalidFields(List.of(InvalidField.builder().name(ex.getField()).reason(ex.getMessage()).build()))
                 .time(LocalDateTime.now())
                 .build();
 
