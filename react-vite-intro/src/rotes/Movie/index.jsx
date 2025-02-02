@@ -4,27 +4,30 @@ import AppBody from "../../components/containers/AppBody/index.jsx";
 import Footer from "../../components/containers/Sections/Footer/index.jsx";
 import Header from "../../components/containers/Sections/Header/index.jsx";
 import AppContainer from "../../components/containers/AppContainer/index.jsx";
-import {AutoComplete, Button, message, Select, Table} from "antd";
+import {AutoComplete, Button, DatePicker, Form, Input, message, Modal, Select, Table} from "antd";
 import Sort from "../../components/containers/Sections/Sort/index.jsx";
 import Filter from "../../components/containers/Sections/Filter/index.jsx";
+import dayjs from "dayjs";
+import { js2xml } from "xml-js";
+import axios from "axios";
 
-function formatDateTimeString(dateString) {
-    if (!dateString) return null;
+// function formatDateTimeString(dateString) {
+//     if (!dateString) return null;
+//
+//     const [datePart, timePart] = dateString.split('T');
+//     if (!datePart || !timePart) return dateString;
+//
+//     const [year, month, day] = datePart.split('-');
+//     return `${day}-${month}-${year} ${timePart}`;
+// }
 
-    const [datePart, timePart] = dateString.split('T');
-    if (!datePart || !timePart) return dateString;
-
-    const [year, month, day] = datePart.split('-');
-    return `${day}-${month}-${year} ${timePart}`;
-}
-
-function formatDateString(dateString) {
-    if (!dateString) return null;
-
-
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
-}
+// function formatDateString(dateString) {
+//     if (!dateString) return null;
+//
+//
+//     const [year, month, day] = dateString.split('-');
+//     return `${year}-${month}-${day}`;
+// }
 
 function parseSearchResponse(xml) {
     const parser = new DOMParser();
@@ -37,7 +40,8 @@ function parseSearchResponse(xml) {
         const y = parseFloat(movieNode.getElementsByTagName("y")[0].textContent);
         const coordinates = {x, y};
 
-        const creationDate = formatDateTimeString(movieNode.getElementsByTagName("creationDate")[0]?.textContent || null);
+        // const creationDate = formatDateTimeString(movieNode.getElementsByTagName("creationDate")[0]?.textContent || null);
+        const creationDate = movieNode.getElementsByTagName("creationDate")[0]?.textContent || null;
 
         const oscarsCount = parseInt(movieNode.getElementsByTagName("oscarsCount")[0].textContent);
         const genre = movieNode.getElementsByTagName("genre")[0].textContent;
@@ -46,7 +50,7 @@ function parseSearchResponse(xml) {
         const screenwriterNode = movieNode.getElementsByTagName("screenwriter")[0];
         const screenwriter = {
             name: screenwriterNode.getElementsByTagName("name")[0].textContent,
-            birthday: formatDateString(screenwriterNode.getElementsByTagName("birthday")[0].textContent),
+            birthday: screenwriterNode.getElementsByTagName("birthday")[0].textContent,
             height: parseFloat(screenwriterNode.getElementsByTagName("height")[0].textContent),
             hairColor: screenwriterNode.getElementsByTagName("hairColor")[0].textContent,
             nationality: screenwriterNode.getElementsByTagName("nationality")[0].textContent
@@ -76,7 +80,7 @@ function Movie() {
     const [sortParams, setSortParams] = useState("");
     const [isMounted, setMounted] = useState(false);
     const [emptyFilters, setEmptyFilters] = useState([]);
-    // const [filterParams, setFilterParams] = useState("");
+    const [errorMessages, setErrorMessages] = useState({});
     const [filters, setFilters] = useState([{criteria: "id", operator: "EQ", value: ""}]);
 
     function addToScroll() {
@@ -167,7 +171,7 @@ function Movie() {
             width: 120,
             align: "center",
             onCell: () => ({
-                style: {minWidth: 120, maxWidth: 120},
+                style: {minWidth: 130, maxWidth: 130},
             }),
         },
         {
@@ -290,7 +294,7 @@ function Movie() {
             }
 
             const responseText = await response.text();
-            const { movies, totalPages } = parseSearchResponse(responseText);
+            const {movies, totalPages} = parseSearchResponse(responseText);
 
             setMovies(movies);
             setTotalCount(totalPages * pageSize);
@@ -301,30 +305,83 @@ function Movie() {
             message.error(`Ошибка запроса: ${error.message}`);
         } finally {
             setLoading(false);
-            setInitialLoad(false); // Обновляем состояние после успешного завершения
+            setInitialLoad(false);
         }
     };
 
-    const sendXmlRequest = async () => {
-        // if (filters.some(element => !element.value || element.value.trim() === "")) {
-        //     const emptyFields = filters.filter(element => !element.value || element.value.trim() === "");
-        //     const fieldNames = emptyFields.map(element => `"${element.criteria}"`).join(", ");
-        //     message.error(`Пожалуйста, заполните поля: ${fieldNames}`);
-        //     return;
-        // }
-        // Определяем пустые фильтры
-        const emptyFields = filters.filter(element => !element.value || element.value.trim() === "");
-        const emptyFieldNames = emptyFields.map(element => element.criteria);
+    const isValidLong = (value) => {
+        const longMin = -9223372036854775808n;
+        const longMax = 9223372036854775807n;
+        try {
+            const num = BigInt(value);
+            return num >= longMin && num <= longMax;
+        } catch {
+            return false;
+        }
+    };
 
-        // Если есть пустые поля, сохраняем их в `emptyFilters` и выводим ошибку
-        if (emptyFields.length > 0) {
-            setEmptyFilters(emptyFieldNames);
-            message.error(`Пожалуйста, заполните поля: ${emptyFieldNames.join(", ")}`);
+    const isValidInteger = (value) => {
+        const intMin = -2147483648;
+        const intMax = 2147483647;
+        try {
+            const num = parseInt(value, 10);
+            return num >= intMin && num <= intMax;
+        } catch {
+            return false;
+        }
+    };
+
+    const isValidStringLength = (value) => {
+        return value.length <= 255;
+    };
+
+    const isValidDouble = (value) => {
+        const min = -2147483648.0;
+        const max = 2147483647.0;
+        const maxScale = 5;
+        try {
+            const num = parseFloat(value);
+            if (isNaN(num) || num < min || num > max) {
+                return false;
+            }
+            const decimalPlaces = (value.split('.')[1] || '').length;
+            return decimalPlaces <= maxScale;
+        } catch {
+            return false;
+        }
+    };
+
+    const validateFilters = () => {
+        const newErrors = {};
+
+        filters.forEach((filter) => {
+            filters.forEach((filter) => {
+                if (!filter.value) {
+                    newErrors[filter.id] = "Field can not be empty";
+                } else if ((filter.criteria === "id" || filter.criteria === "oscarsCount") && !isValidLong(filter.value)) {
+                    newErrors[filter.id] =
+                        "Expected an integer number between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807";
+                } else if ((filter.criteria === "coordinates.y" || filter.criteria === "duration") && !isValidInteger(filter.value)) {
+                    newErrors[filter.id] =
+                        "Expected an integer number between -2,147,483,648 and 2,147,483,647";
+                } else if ((filter.criteria === "name" || filter.criteria === "screenwriter.name") && !isValidStringLength(filter.value)) {
+                    newErrors[filter.id] =
+                        "Value length exceeds maximum allowed limit of 255 characters"
+                } else if ((filter.criteria === "coordinates.x" || filter.criteria === "screenwriter.height") && !isValidDouble(filter.value)) {
+                    newErrors[filter.id] =
+                        "Expected a numeric value between -2,147,483,648 and 2,147,483,647. Maximum 5 decimal places allowed.";
+                }
+            });
+        });
+
+        setErrorMessages(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const sendXmlRequest = async () => {
+        if (!validateFilters()) {
             return;
         }
-
-        // Если ошибок нет, сбрасываем `emptyFilters`
-        setEmptyFilters([]);
 
         setLoading(true);
 
@@ -351,7 +408,7 @@ function Movie() {
             }
 
             const responseText = await response.text();
-            const { movies, totalPages } = parseSearchResponse(responseText);
+            const {movies, totalPages} = parseSearchResponse(responseText);
 
             setMovies(movies);
             setTotalCount(totalPages * pageSize);
@@ -362,7 +419,7 @@ function Movie() {
             message.error(`Ошибка запроса: ${error.message}`);
         } finally {
             setLoading(false);
-            setInitialLoad(false); // Обновляем состояние после успешного завершения
+            setInitialLoad(false);
         }
     };
 
@@ -399,17 +456,261 @@ function Movie() {
         setSortParams(params.slice());
     }
 
-    // function setFilterString(params) {
-    //     setFilterParams(params.slice());
-    // }
     function setFilterString(params) {
         setFilters(params.slice());
     }
+
+    const [selectedMovie, setSelectedMovie] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [enumOptions, setEnumOptions] = useState({});
+    const [loadedEnums, setLoadedEnums] = useState(false);
+
+    const parseEnumResponse = (xml, tag) => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xml, "application/xml");
+        return Array.from(xmlDoc.getElementsByTagName(tag)).map((node) => node.textContent);
+    };
+
+    useEffect(() => {
+        if (!loadedEnums) {
+            const fetchEnums = async () => {
+                setLoading(true);
+                try {
+                    const responses = await Promise.all([
+                        fetch("http://localhost:8765/api/v1/movies/colors").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/countries").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/genres").then((res) => res.text()),
+                        fetch("http://localhost:8765/api/v1/movies/ratings").then((res) => res.text()),
+                    ]);
+
+                    const colors = parseEnumResponse(responses[0], "color");
+                    const countries = parseEnumResponse(responses[1], "country");
+                    const genres = parseEnumResponse(responses[2], "genre");
+                    const ratings = parseEnumResponse(responses[3], "rating");
+
+                    setEnumOptions({
+                        hairColor: colors,
+                        nationality: countries,
+                        genre: genres,
+                        mpaaRating: ratings,
+                    });
+
+                    message.success("Все данные успешно загружены!");
+                    setLoadedEnums(true);
+                } catch (error) {
+                    message.error(`Ошибка загрузки данных: ${error.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchEnums();
+        }
+    }, [loadedEnums]);
+
+    const handleRowClick = (record) => {
+        const newRecord = {
+            ...record,
+            screenwriter: {
+                ...record.screenwriter,
+                birthday: record.screenwriter?.birthday
+                    ? dayjs(record.screenwriter.birthday, "YYYY-MM-DD")
+                    : null
+            }
+        };
+
+        setSelectedMovie(newRecord);
+        setIsModalOpen(true);
+        form.setFieldsValue(newRecord);
+    };
+
+    const handleSave = async () => {
+        try {
+            console.log("before values");
+            const values = await form.validateFields();
+
+            console.log("before movieData");
+            console.log(values.creationDate);
+            const movieData = {
+                Movie: {
+                    name: values.name,
+                    coordinates: {
+                        x: values.coordinates.x,
+                        y: values.coordinates.y,
+                    },
+                    creationDate: selectedMovie.creationDate,
+                    oscarsCount: values.oscarsCount,
+                    genre: values.genre,
+                    mpaaRating: values.mpaaRating,
+                    screenwriter: {
+                        name: values.screenwriter.name,
+                        height: values.screenwriter.height,
+                        hairColor: values.screenwriter.hairColor,
+                        nationality: values.screenwriter.nationality,
+                    },
+                    duration: values.duration,
+                },
+            };
+
+            console.log("before xmlData");
+            const xmlData = js2xml(movieData, { compact: true, ignoreComment: true, spaces: 4 });
+
+            const movieId = selectedMovie.id;
+
+            console.log("before response");
+            const response = await axios.put(`http://localhost:8765/api/v1/movies/${movieId}`, xmlData, {
+                headers: {
+                    "Content-Type": "application/xml",
+                },
+            });
+
+            const responseText = await response.data;
+            console.log("Ответ от сервера (XML):", responseText);
+
+            // ✅ Парсим XML в JSON
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(responseText, "text/xml");
+
+            const updatedMovieFromResponse = {
+                id: Number(xmlDoc.getElementsByTagName("id")[0].textContent), // Преобразуем в число
+                name: xmlDoc.getElementsByTagName("name")[0].textContent,
+                coordinates: {
+                    x: parseFloat(xmlDoc.getElementsByTagName("x")[0].textContent),
+                    y: parseInt(xmlDoc.getElementsByTagName("y")[0].textContent, 10),
+                },
+                creationDate: xmlDoc.getElementsByTagName("creationDate")[0].textContent,
+                oscarsCount: parseInt(xmlDoc.getElementsByTagName("oscarsCount")[0].textContent, 10),
+                genre: xmlDoc.getElementsByTagName("genre")[0].textContent,
+                mpaaRating: xmlDoc.getElementsByTagName("mpaaRating")[0].textContent,
+                screenwriter: {
+                    name: xmlDoc.getElementsByTagName("screenwriter")[0].getElementsByTagName("name")[0].textContent,
+                    birthday: xmlDoc.getElementsByTagName("screenwriter")[0].getElementsByTagName("birthday")[0]?.textContent || null,
+                    height: parseFloat(xmlDoc.getElementsByTagName("screenwriter")[0].getElementsByTagName("height")[0].textContent),
+                    hairColor: xmlDoc.getElementsByTagName("screenwriter")[0].getElementsByTagName("hairColor")[0]?.textContent || null,
+                    nationality: xmlDoc.getElementsByTagName("screenwriter")[0].getElementsByTagName("nationality")[0]?.textContent || null,
+                },
+                duration: parseInt(xmlDoc.getElementsByTagName("duration")[0].textContent, 10),
+            };
+
+            console.log("Обновлённый фильм (JSON):", updatedMovieFromResponse);
+
+            // ✅ Проверяем, что обновленный фильм корректный
+            if (!updatedMovieFromResponse.id) {
+                console.error("Ошибка: ID фильма не найден в ответе!");
+                return;
+            }
+
+            // ✅ Обновляем данные в таблице
+            setMovies((prevMovies) => {
+                const newMovies = prevMovies.map((movie) =>
+                    movie.id === updatedMovieFromResponse.id ? updatedMovieFromResponse : movie
+                );
+
+                console.log("Новый список фильмов:", newMovies);
+                return newMovies; // Важно вернуть новый массив
+            });
+
+            console.log("Success:", response.data);
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
 
     return (
         <AppBody style={{margin: 0, padding: 0}}>
             <Header logo="home" addToScroll={addToScroll} removeToScroll={removeToScroll} tasks={false}>
             </Header>
+            {selectedMovie && (
+                <Modal
+                    title={<div style={{textAlign: "center", width: "100%"}}>Update movie</div>}
+                    open={isModalOpen}
+                    onCancel={() => setIsModalOpen(false)}
+                    footer={[
+                        <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+                            Отмена
+                        </Button>,
+                        <Button key="save" type="primary" onClick={handleSave}>
+                            Сохранить
+                        </Button>,
+                    ]}
+                    centered
+                >
+                    <Form form={form} layout="vertical" initialValues={selectedMovie}>
+                        <Form.Item label="Name" name="name"
+                                   rules={[{required: true, message: 'Please input the name!'}]}>
+                            <Input placeholder="Input name" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Coordinate X" name={["coordinates", "x"]}
+                                   rules={[{required: true, message: 'Please input coordinate X!'}]}>
+                            <Input placeholder="Input coordinate X" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Coordinate Y" name={["coordinates", "y"]}
+                                   rules={[{required: true, message: 'Please input coordinate Y!'}]}>
+                            <Input placeholder="Input coordinate Y" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Oscars count" name="oscarsCount"
+                                   rules={[{required: true, message: 'Please input oscars count!'}]}>
+                            <Input placeholder="Input oscars count" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Genre" name="genre"
+                                   rules={[{required: true, message: 'Please input genre!'}]}>
+                            <Select style={{width: "220px"}}>
+                                {enumOptions.genre.map((genre) => (
+                                    <Select.Option key={genre} value={genre}>
+                                        {genre}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item label="Mpaa rating" name="mpaaRating"
+                                   rules={[{required: true, message: 'Please input Mpaa rating!'}]}>
+                            <Select style={{width: "220px"}}>
+                                {enumOptions.mpaaRating.map((mpaaRating) => (
+                                    <Select.Option key={mpaaRating} value={mpaaRating}>
+                                        {mpaaRating}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item label="Screenwriter name" name={["screenwriter", "name"]}
+                                   rules={[{required: true, message: 'Please input screenwriter name!'}]}>
+                            <Input placeholder="Input screenwriter name" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Screenwriter birthday" name={["screenwriter", "birthday"]}>
+                            <DatePicker style={{width: "220px"}} format="YYYY-MM-DD"/>
+                        </Form.Item>
+                        <Form.Item label="Screenwriter height" name={["screenwriter", "height"]}
+                                   rules={[{required: true, message: 'Please input screenwriter height!'}]}>
+                            <Input placeholder="Input screenwriter height" style={{width: "220px"}}/>
+                        </Form.Item>
+                        <Form.Item label="Screenwriter hair color" name={["screenwriter", "hairColor"]}>
+                            <Select style={{width: "220px"}}>
+                                <Select.Option value="">-- Select an option --</Select.Option>
+                                {enumOptions.hairColor.map((hairColor) => (
+                                    <Select.Option key={hairColor} value={hairColor}>
+                                        {hairColor}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item label="Screenwriter nationality" name={["screenwriter", "nationality"]}>
+                            <Select style={{width: "220px"}}>
+                                <Select.Option value="">-- Select an option --</Select.Option>
+                                {enumOptions.nationality.map((nationality) => (
+                                    <Select.Option key={nationality} value={nationality}>
+                                        {nationality}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item label="Duration" name="duration">
+                            <Input placeholder="Input duration" style={{width: "220px"}}/>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            )}
             <AppContainer style={{width: '100%', overflowX: 'auto'}}>
                 <Table
                     dataSource={movies}
@@ -418,6 +719,9 @@ function Movie() {
                     rowKey="id"
                     loading={loading}
                     bordered={true}
+                    onRow={(record) => ({
+                        onClick: () => handleRowClick(record),
+                    })}
                     pagination={{
                         total: totalCount,
                         // total: movies.length,
@@ -467,7 +771,13 @@ function Movie() {
                 </div>
 
                 <div className="wrapper filter">
-                    <Filter filtersUpdate={setFilterString} emptyFields={emptyFilters} setEmptyFields={setEmptyFilters} >
+                    <Filter filtersUpdate={setFilterString}
+                            emptyFields={emptyFilters}
+                            setEmptyFields={setEmptyFilters}
+                            errorMessages={errorMessages}
+                            setErrorMessages={setErrorMessages}
+                            enumOptions={enumOptions}
+                            setEnumOptions={setEnumOptions}>
                         <Select.Option value="id">ID</Select.Option>
                         <Select.Option value="name">Name</Select.Option>
                         <Select.Option value="coordinates.x">X</Select.Option>
@@ -479,15 +789,15 @@ function Movie() {
                         <Select.Option value="screenwriter.name">Screenwriter name</Select.Option>
                         <Select.Option value="screenwriter.birthday">Screenwriter birthday</Select.Option>
                         <Select.Option value="screenwriter.height">Screenwriter height</Select.Option>
-                        <Select.Option value="screenwriter.hairColor">Screenwriter hair color</Select.Option>
-                        <Select.Option value="screenwriter.nationality">Screenwriter nationality</Select.Option>
+                        <Select.Option value="hairColor">Screenwriter hair color</Select.Option>
+                        <Select.Option value="nationality">Screenwriter nationality</Select.Option>
                         <Select.Option value="screenwriter.price">Screenwriter price</Select.Option>
                         <Select.Option value="duration">Duration</Select.Option>
                     </Filter>
                 </div>
 
                 <Button type="primary" onClick={sendXmlRequest} loading={loading} style={{marginTop: "10px"}}>
-                    Сохранить параметры фильтрации и сортировки
+                    Save filters and sorts
                 </Button>
             </AppContainer>
             <Footer/>

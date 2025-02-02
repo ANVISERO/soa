@@ -3,8 +3,8 @@ package com.anvisero.movieservice.dto.enums;
 public enum FieldType {
     ID("id"),
     NAME("name"),
-    COORDINATE_X("coordinate.x"),
-    COORDINATE_Y("coordinate.y"),
+    COORDINATE_X("coordinates.x"),
+    COORDINATE_Y("coordinates.y"),
     CREATION_DATE("creationDate"),
     OSCARS_COUNT("oscarsCount"),
     GENRE("genre"),
@@ -14,7 +14,7 @@ public enum FieldType {
     SCREENWRITER_HEIGHT("screenwriter.height"),
     SCREENWRITER_HAIR_COLOR("screenwriter.hairColor"),
     SCREENWRITER_NATIONALITY("screenwriter.nationality"),
-    DURATION("duration"),;
+    DURATION("duration");
 
     private final String value;
 

@@ -94,6 +94,7 @@ public class MoviePredicate {
             }
         } else if (isDouble(filter.getValue().toString()) && filter.getField() == COORDINATE_X) {
             NumberPath<Double> path = entityPath.getNumber(filter.getField().toString(), Double.class);
+            System.out.println(filter.getField().toString());
             double value = Double.parseDouble(filter.getValue().toString());
             switch (filter.getFilterType()) {
                 case EQ:

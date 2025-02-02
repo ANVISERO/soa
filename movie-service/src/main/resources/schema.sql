@@ -30,5 +30,5 @@ CREATE TABLE IF NOT EXISTS movies
     duration        INTEGER                                 NOT NULL,
     CONSTRAINT pk_movies PRIMARY KEY (movie_id),
     CONSTRAINT fk_movies_on_coordinates FOREIGN KEY (coordinate_id) REFERENCES coordinates (coordinate_id) ON DELETE CASCADE,
-    CONSTRAINT fk_screenwriters_on_coordinates FOREIGN KEY (screenwriter_id) REFERENCES screenwriters (screenwriter_id) ON DELETE CASCADE
+    CONSTRAINT fk_movies_on_screenwriters FOREIGN KEY (screenwriter_id) REFERENCES screenwriters (screenwriter_id) ON DELETE CASCADE
 );

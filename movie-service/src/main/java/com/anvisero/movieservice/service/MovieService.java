@@ -119,6 +119,7 @@ public class MovieService {
             pageable = PageRequest.of(movieRequest.getPage(), movieRequest.getPageSize());
         }
         Page<Movie> moviePage;
+        System.out.println("before filters");
         if (movieRequest.getFilters() == null || movieRequest.getFilters().isEmpty()) {
             moviePage = movieRepository.findAll(pageable);
         } else {
@@ -126,6 +127,7 @@ public class MovieService {
             for (Filter filter : filters) {
                 moviePredicatesBuilder.with(filter);
             }
+
             moviePage = movieRepository.findAll(moviePredicatesBuilder.build(), pageable);
         }
 
