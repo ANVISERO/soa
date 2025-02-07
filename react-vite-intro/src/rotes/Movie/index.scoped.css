@@ -365,6 +365,7 @@ input {
 .ant-table {
   table-layout: fixed; /* Фиксированная ширина колонок */
   width: 100%; /* Таблица занимает всю доступную ширину */
+  border-radius: 10px;
 }
 
 .ant-table th, .ant-table td {

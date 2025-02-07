@@ -16,7 +16,8 @@ public class CountryEnumLengthRestrictedDeserializer extends JsonDeserializer<Co
     public Country deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = p.getText();
         if (value.isEmpty()) {
-            throw JsonMappingException.from(p, "Please specify the movie genre");
+            return null;
+//            throw JsonMappingException.from(p, "Please specify the movie genre");
         }
 
         if (value.length() > MAX_LENGTH) {

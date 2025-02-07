@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import { HashLink as Link } from 'react-router-hash-link';
+import React, {useState} from 'react';
+import {HashLink as Link} from 'react-router-hash-link';
 import AppContainer from '../../AppContainer';
 
 import "./index.scoped.css";

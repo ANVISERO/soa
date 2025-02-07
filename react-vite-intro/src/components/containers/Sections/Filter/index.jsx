@@ -17,20 +17,20 @@ const Filter = (props) => {
     }, [filters]);
 
     const criteriaOptions = [
-        {value: "id", type: "number"},
-        {value: "name", type: "string"},
-        {value: "coordinates.x", type: "number"},
-        {value: "coordinates.y", type: "number"},
-        {value: "oscarsCount", type: "number"},
-        {value: "genre", type: "enum"},
-        {value: "mpaaRating", type: "enum"},
-        {value: "screenwriter.name", type: "string"},
-        {value: "screenwriter.birthday", type: "date"},
-        {value: "screenwriter.height", type: "number"},
-        {value: "hairColor", type: "enum"},
-        {value: "nationality", type: "enum"},
-        {value: "duration", type: "number"},
-        {value: "creationDate", type: "dateTime"},
+        {value: "id", type: "number", name: "ID"},
+        {value: "name", type: "string", name: "Name"},
+        {value: "coordinates.x", type: "number", name: "X"},
+        {value: "coordinates.y", type: "number", name: "Y"},
+        {value: "creationDate", type: "dateTime", name: "Creation date"},
+        {value: "oscarsCount", type: "number", name: "Oscars Count"},
+        {value: "genre", type: "enum", name: "Genre"},
+        {value: "mpaaRating", type: "enum", name: "Mpaa Rating"},
+        {value: "screenwriter.name", type: "string", name: "Screenwriter name"},
+        {value: "screenwriter.birthday", type: "date", name: "Screenwriter birthday"},
+        {value: "screenwriter.height", type: "number", name: "Screenwriter height"},
+        {value: "hairColor", type: "enum", name: "Screenwriter hair color"},
+        {value: "nationality", type: "enum", name: "Screenwriter nationality"},
+        {value: "duration", type: "number", name: "Duration"},
     ];
 
     const operatorOptions = {
@@ -113,7 +113,7 @@ const Filter = (props) => {
                             >
                                 {criteriaOptions.map((option) => (
                                     <Select.Option key={option.value} value={option.value}>
-                                        {option.value}
+                                        {option.name}
                                     </Select.Option>
                                 ))}
                             </Select>

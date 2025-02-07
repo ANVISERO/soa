@@ -5,6 +5,7 @@ import com.anvisero.movieservice.dto.FilterRequest;
 import com.anvisero.movieservice.dto.MovieDto;
 import com.anvisero.movieservice.dto.MovieDtoResponse;
 import com.anvisero.movieservice.dto.MoviesHonoredByLengthResponse;
+import com.anvisero.movieservice.dto.PersonDto;
 import com.anvisero.movieservice.dto.SearchResponse;
 import com.anvisero.movieservice.model.Coordinates;
 import com.anvisero.movieservice.model.Movie;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;

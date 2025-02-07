@@ -17,7 +17,8 @@ public class ColorEnumLengthRestrictedDeserializer extends JsonDeserializer<Colo
     public Color deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = p.getText();
         if (value.isEmpty()) {
-            throw JsonMappingException.from(p,"Please specify the movie screenwriter's hair color");
+            return null;
+//            throw JsonMappingException.from(p,"Please specify the movie screenwriter's hair color");
         }
 
         if (value.length() > MAX_LENGTH) {

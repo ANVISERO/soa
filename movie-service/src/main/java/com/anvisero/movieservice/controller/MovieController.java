@@ -95,7 +95,7 @@ public class MovieController {
         return ResponseEntity.ok().body(movieResponse);
     }
 
-    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<Void> deleteMovieById(
             @PathVariable
             @Min(value = 1, message = "ID must be greater than 0")

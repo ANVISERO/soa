@@ -27,6 +27,6 @@ target
 .DS_Store
 .idea/
 
-react-vite-intro/node_modules
-react-vite-intro/dist
+react-vite-intro/node_modules/
+react-vite-intro/dist/
 

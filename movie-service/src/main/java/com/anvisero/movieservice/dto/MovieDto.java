@@ -63,6 +63,7 @@ public class MovieDto {
     @JacksonXmlProperty(localName = "screenwriter")
     private PersonDto screenwriter;
 
+    @NotNull(message = "Please specify the movie duration")
     @Positive(message = "Movie duration must be greater than zero")
     @Max(value = 500, message = "Movie duration cannot exceed 500 minutes")
     @JacksonXmlProperty(localName = "duration")
