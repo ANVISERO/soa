@@ -10,6 +10,7 @@ import Filter from "../../components/containers/Sections/Filter/index.jsx";
 import dayjs from "dayjs";
 import {js2xml} from "xml-js";
 import axios from "axios";
+import {XMLParser} from "fast-xml-parser";
 
 function parseSearchResponse(xml) {
     const parser = new DOMParser();
@@ -188,6 +189,7 @@ function Movie() {
                     dataIndex: ["screenwriter", "hairColor"],
                     key: "screenwriter.hairColor",
                     width: 70,
+                    align: "center",
                     onCell: () => ({
                         style: {minWidth: 80, maxWidth: 90},
                     }),
@@ -487,8 +489,21 @@ function Movie() {
                 body: xmlInput
             });
 
+
             if (!response.ok) {
-                throw new Error(`Ошибка: ${response.statusText}`);
+                const [errorData, setErrorData] = useState(null);
+                const parseXML = (xml) => {
+                    const parser = new XMLParser();
+                    const jsonObj = parser.parse(xml);
+                    setErrorData(jsonObj.Error);
+                };
+
+                notification.success({
+                    message: response.statusText + " " + errorData.message,
+                    description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'center',
+                });
+                // throw new Error(`Ошибка: ${response.statusText}`);
             }
 
             const responseText = await response.text();
@@ -544,19 +559,19 @@ function Movie() {
     };
 
     const handleRowClick = (record) => {
-        const newRecord = {
-            ...record,
-            screenwriter: {
-                ...record.screenwriter,
-                birthday: record.screenwriter?.birthday
-                    ? dayjs(record.screenwriter.birthday, "YYYY-MM-DD")
-                    : null
-            }
-        };
+        // const newRecord = {
+        //     ...record,
+        //     screenwriter: {
+        //         ...record.screenwriter,
+        //         // birthday: record.screenwriter?.birthday
+        //         //     ? dayjs(record.screenwriter.birthday, "YYYY-MM-DD")
+        //         //     : null
+        //     }
+        // };
 
-        setSelectedMovie(newRecord);
+        setSelectedMovie(record);
         setIsModalOpen(true);
-        form.setFieldsValue(newRecord);
+        form.setFieldsValue(record);
     };
 
     const handleSave = async () => {
@@ -579,7 +594,7 @@ function Movie() {
                     screenwriter: {
                         name: values.screenwriter.name,
                         height: values.screenwriter.height,
-                        birthday: values.screenwriter.birthday ? values.screenwriter.birthday.format("YYYY-MM-DD") : null,
+                        birthday: values.screenwriter.birthday,
                         hairColor: values.screenwriter.hairColor,
                         nationality: values.screenwriter.nationality,
                     },
@@ -596,6 +611,25 @@ function Movie() {
                     "Content-Type": "application/xml",
                 },
             });
+            console.log("after response")
+
+            if (response.status !== 200) {
+                const [errorData, setErrorData] = useState(null);
+                const parseXML = (xml) => {
+                    const parser = new XMLParser();
+                    const jsonObj = parser.parse(xml);
+                    setErrorData(jsonObj.Error);
+                };
+                console.log("before notification")
+
+                notification.success({
+                    message: response.statusText + " " + errorData.message,
+                    description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'center',
+                });
+                console.log("after notification")
+                // throw new Error(`Ошибка: ${response.statusText}`);
+            }
 
             const responseText = await response.data;
 
@@ -676,7 +710,7 @@ function Movie() {
                     screenwriter: {
                         name: values.screenwriter.name,
                         height: values.screenwriter.height,
-                        birthday: values.screenwriter.birthday ? values.screenwriter.birthday.format("YYYY-MM-DD") : null,
+                        birthday: values.screenwriter.birthday,
                         hairColor: values.screenwriter.hairColor,
                         nationality: values.screenwriter.nationality,
                     },
@@ -839,8 +873,8 @@ function Movie() {
         <AppBody style={{margin: 0, padding: 0}}>
             <Header logo="home" addToScroll={addToScroll} removeToScroll={removeToScroll} tasks={false}>
             </Header>
-            <div style={{ display: "flex", justifyContent: "flex-start", width: "100%", marginLeft: 100 }}>
-                <Button type="primary" onClick={showAddModal} style={{ marginBottom: 5, marginTop: 5 }}>
+            <div style={{display: "flex", justifyContent: "space-between", width: "100%", marginLeft: 100}}>
+                <Button type="primary" onClick={showAddModal} style={{marginBottom: 5, marginTop: 5}}>
                     Create movie
                 </Button>
             </div>
@@ -950,8 +984,35 @@ function Movie() {
                                ]}>
                         <Input placeholder="Input screenwriter name" style={{width: "220px"}}/>
                     </Form.Item>
-                    <Form.Item label="Screenwriter birthday" name={["screenwriter", "birthday"]}>
-                        <DatePicker style={{width: "220px"}} format="YYYY-MM-DD"/>
+                    {/*<Form.Item label="Screenwriter birthday" name={["screenwriter", "birthday"]}>*/}
+                    {/*    <DatePicker style={{width: "220px"}} format="YYYY-MM-DD"/>*/}
+                    {/*</Form.Item>*/}
+                    <Form.Item
+                        label="Screenwriter birthday"
+                        name={["screenwriter", "birthday"]}
+                        rules={[
+                            {
+                                validator: (_, value) => {
+                                    if (!value || !dayjs.isDayjs(value)) {
+                                        return Promise.resolve();
+                                    }
+                                    const today = dayjs().startOf("day");
+                                    return value.isAfter(today) // Запрещаем сегодня и будущее
+                                        ? Promise.reject("Birthday must be before today!")
+                                        : Promise.resolve();
+                                },
+                            },
+                        ]}
+                        getValueProps={(value) => ({
+                            value: value ? dayjs(value, "YYYY-MM-DD") : null,
+                        })}
+                        getValueFromEvent={(value) => (value ? value.format("YYYY-MM-DD") : null)}
+                    >
+                        <DatePicker
+                            style={{width: "220px"}}
+                            format="YYYY-MM-DD"
+                            disabledDate={(current) => current && current.isAfter(dayjs().startOf("day"))} // Запрещаем сегодня и будущее
+                        />
                     </Form.Item>
                     <Form.Item label="Screenwriter height" name={["screenwriter", "height"]}
                                rules={[
@@ -1132,8 +1193,32 @@ function Movie() {
                                    ]}>
                             <Input placeholder="Input screenwriter name" style={{width: "220px"}}/>
                         </Form.Item>
-                        <Form.Item label="Screenwriter birthday" name={["screenwriter", "birthday"]}>
-                            <DatePicker style={{width: "220px"}} format="YYYY-MM-DD"/>
+                        <Form.Item
+                            label="Screenwriter birthday"
+                            name={["screenwriter", "birthday"]}
+                            rules={[
+                                {
+                                    validator: (_, value) => {
+                                        if (!value || !dayjs.isDayjs(value)) {
+                                            return Promise.resolve();
+                                        }
+                                        const today = dayjs().startOf("day");
+                                        return value.isAfter(today) // Запрещаем сегодня и будущее
+                                            ? Promise.reject("Birthday must be before today!")
+                                            : Promise.resolve();
+                                    },
+                                },
+                            ]}
+                            getValueProps={(value) => ({
+                                value: value ? dayjs(value, "YYYY-MM-DD") : null,
+                            })}
+                            getValueFromEvent={(value) => (value ? value.format("YYYY-MM-DD") : null)}
+                        >
+                            <DatePicker
+                                style={{width: "220px"}}
+                                format="YYYY-MM-DD"
+                                disabledDate={(current) => current && current.isAfter(dayjs().startOf("day"))} // Запрещаем сегодня и будущее
+                            />
                         </Form.Item>
                         <Form.Item label="Screenwriter height" name={["screenwriter", "height"]}
                                    rules={[
@@ -1186,7 +1271,13 @@ function Movie() {
                     </Form>
                 </Modal>
             )}
-            <AppContainer style={{width: '100%', overflowX: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <AppContainer style={{
+                width: '100%',
+                overflowX: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start'
+            }}>
                 <Table
                     dataSource={movies}
                     columns={columns}
@@ -1282,7 +1373,7 @@ function Movie() {
                         sendXmlRequest();
                     }}
                     loading={loading}
-                    style={{ marginTop: "10px" }}
+                    style={{marginTop: "10px"}}
                 >
                     Save filters and sorts
                 </Button>

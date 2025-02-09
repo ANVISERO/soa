@@ -3,6 +3,8 @@ import './App.css'
 import {createBrowserRouter, Route, RouterProvider} from "react-router-dom";
 import Movie from "./rotes/Movie/index.jsx";
 import NotFound from "./rotes/NotFound/index.jsx";
+import MovieMax from "./rotes/MovieMax/index.jsx";
+import Loosers from "./rotes/Loosers/index.jsx";
 
 function App() {
     const [count, setCount] = useState(0)
@@ -28,6 +30,16 @@ function App() {
                 path: "/movies",
                 element: <Movie />,
                 errorElement: <NotFound />
+            },
+            {
+                path: "/movies-max",
+                element: <MovieMax />,
+                errorElement: <NotFound />
+            },
+            {
+                path: "/loosers",
+                element: <Loosers />,
+                errorElement: <NotFound />
             }
             // {
             //     path: "/not",
@@ -41,6 +53,8 @@ function App() {
         <RouterProvider router={router}>
             <Route path='/' element={<Movie />}/>
             <Route path='/movies' element={<Movie />}/>
+            <Route path='/movies-max' element={<MovieMax />}/>
+            <Route path='/loosers' element={<Loosers />}/>
             {/*<Route path='/not' element={<NotFound/>}/>*/}
         </RouterProvider>
     )

@@ -31,6 +31,12 @@ function Header(props) {
                             <Link className={"header__link" + " " + props.hover} to={"/movies"}>
                                 <h1>Movies</h1>
                             </Link>
+                            <Link className={"header__link" + " " + props.hover} to={"/movies-max"}>
+                                <h1>Movies max</h1>
+                            </Link>
+                            <Link className={"header__link" + " " + props.hover} to={"/loosers"}>
+                                <h1>Loosers</h1>
+                            </Link>
                             {props.children}
                         </div>
                     </div>

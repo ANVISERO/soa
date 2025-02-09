@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class PersonDto {
     @JacksonXmlProperty(localName = "name")
     private String name;
 
+    @PastOrPresent(message = "Person's birthday must not be in future")
     @JacksonXmlProperty(localName = "birthday")
     private LocalDate birthday;
 
