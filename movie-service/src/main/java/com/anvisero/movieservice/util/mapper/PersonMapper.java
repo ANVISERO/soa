@@ -4,10 +4,12 @@ import com.anvisero.movieservice.dto.PersonDto;
 import com.anvisero.movieservice.model.Person;
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+
 @UtilityClass
 public class PersonMapper {
 
-    public Person personRequestToPerson(PersonDto personDto) {
+    public Person personRequestToPerson(PersonDto personDto, Float height) {
         if (personDto == null) {
             return null;
         }
@@ -16,8 +18,8 @@ public class PersonMapper {
 
         person.name(personDto.getName());
         person.birthday(personDto.getBirthday());
-        if (personDto.getHeight() != null) {
-            person.height(personDto.getHeight());
+        if (height != null) {
+            person.height(height);
         }
         person.hairColor(personDto.getHairColor());
         person.nationality(personDto.getNationality());
@@ -34,7 +36,7 @@ public class PersonMapper {
 
         personDto.setName(person.getName());
         personDto.setBirthday(person.getBirthday());
-        personDto.setHeight(person.getHeight());
+        personDto.setHeight(BigDecimal.valueOf(person.getHeight()));
         personDto.setHairColor(person.getHairColor());
         personDto.setNationality(person.getNationality());
 

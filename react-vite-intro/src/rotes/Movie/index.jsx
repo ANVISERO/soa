@@ -501,7 +501,7 @@ function Movie() {
                 } else if ((filter.criteria === "name" || filter.criteria === "screenwriter.name") && !isValidStringLength(filter.value)) {
                     newErrors[filter.id] =
                         "Value length exceeds maximum allowed limit of 255 characters"
-                } else if ((filter.criteria === "coordinates.x" || filter.criteria === "screenwriter.height") && !isValidDouble(filter.value)) {
+                } else if (filter.criteria === "coordinates.x" && !isValidDouble(filter.value)) {
                     newErrors[filter.id] =
                         "Expected a numeric value between -2,147,483,648 and 2,147,483,647. Maximum 5 decimal places allowed.";
                 } else if (filter.criteria === "screenwriter.height" && (!isValidDouble(filter.value) || filter.value < 0)) {

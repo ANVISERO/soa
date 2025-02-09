@@ -2,6 +2,8 @@ package com.anvisero.movieservice.dto;
 
 import com.anvisero.movieservice.deserializer.ColorEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.deserializer.CountryEnumLengthRestrictedDeserializer;
+import com.anvisero.movieservice.deserializer.FloatDeserializer;
+import com.anvisero.movieservice.deserializer.MpaaRatingEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.model.enums.Country;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -17,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -37,7 +40,7 @@ public class PersonDto {
     @NotNull(message = "Please provide person's height")
     @Positive(message = "Person's height must be greater than zero")
     @JacksonXmlProperty(localName = "height")
-    private Float height;
+    private BigDecimal height;
 
     @JsonDeserialize(using = ColorEnumLengthRestrictedDeserializer.class)
     @JacksonXmlProperty(localName = "hairColor")

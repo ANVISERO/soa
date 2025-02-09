@@ -2,6 +2,7 @@ package com.anvisero.movieservice.exception.handler;
 
 import com.anvisero.movieservice.exception.FilterEnumValidationException;
 import com.anvisero.movieservice.exception.NumericFieldParseException;
+import com.anvisero.movieservice.exception.UnprocessibleEntityException;
 import com.anvisero.movieservice.exception.model.DefaultErrorResponse;
 import com.anvisero.movieservice.exception.model.InvalidField;
 import com.anvisero.movieservice.exception.model.ValidationErrorResponse;
@@ -197,7 +198,7 @@ public class ApplicationExceptionHandler {
     }
 
     @ExceptionHandler(ParsingException.class)
-    public ResponseEntity<ValidationErrorResponse> handleLongParsingException(ParsingException ex) {
+    public ResponseEntity<ValidationErrorResponse> handleParsingException(ParsingException ex) {
         ValidationErrorResponse response = ValidationErrorResponse.builder().message("Bad Request")
                 .invalidFields(List.of(InvalidField.builder().name(ex.getField()).reason(ex.getMessage()).build()))
                 .time(LocalDateTime.now())
@@ -207,6 +208,19 @@ public class ApplicationExceptionHandler {
         headers.setContentType(MediaType.APPLICATION_XML);
 
         return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnprocessibleEntityException.class)
+    public ResponseEntity<ValidationErrorResponse> handleUnprocessibleEntityException(UnprocessibleEntityException ex) {
+        ValidationErrorResponse response = ValidationErrorResponse.builder().message("Unprocessable Entity")
+                .invalidFields(List.of(InvalidField.builder().name(ex.getField()).reason(ex.getMessage()).build()))
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -269,12 +283,15 @@ public class ApplicationExceptionHandler {
                 return "Invalid number format. Use '.' as a decimal separator.";
             } else if (originalMessage.contains("Integer")) {
                 return "Invalid number format. Integer value expected.";
+            } else if (originalMessage.contains("Long")) {
+                return "Invalid number format. Long value expected.";
             }
         } else if (originalMessage.contains("java.time.format.DateTimeParseException")) {
             return "Invalid date format. Expected format: yyyy-MM-dd.";
         } else if (originalMessage.contains("Value length exceeds maximum allowed limit")
                 || originalMessage.contains("Please specify")
                 || originalMessage.contains("Invalid format for coordinate")
+                || originalMessage.contains("Invalid format for")
                 || originalMessage.contains("Invalid value for")) {
             return originalMessage;
         }

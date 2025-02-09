@@ -8,7 +8,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class MovieMapper {
 
-    public Movie movieRequestToMovie(MovieDto movieDto) {
+    public Movie movieRequestToMovie(MovieDto movieDto, Double x, Float height) {
         if (movieDto == null) {
             return null;
         }
@@ -17,13 +17,13 @@ public class MovieMapper {
 
         movie.id(movieDto.getId());
         movie.name(movieDto.getName());
-        movie.coordinates(CoordinatesMapper.coordinatesRequestToCoordinates(movieDto.getCoordinates()));
+        movie.coordinates(CoordinatesMapper.coordinatesRequestToCoordinates(movieDto.getCoordinates(), x));
         if (movieDto.getOscarsCount() != null) {
             movie.oscarsCount(movieDto.getOscarsCount());
         }
         movie.genre(movieDto.getGenre());
         movie.mpaaRating(movieDto.getMpaaRating());
-        movie.screenwriter(PersonMapper.personRequestToPerson(movieDto.getScreenwriter()));
+        movie.screenwriter(PersonMapper.personRequestToPerson(movieDto.getScreenwriter(), height));
         movie.duration(movieDto.getDuration());
 
         return movie.build();

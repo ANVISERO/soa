@@ -1,5 +1,7 @@
 package com.anvisero.movieservice.dto;
 
+import com.anvisero.movieservice.deserializer.IntegerDeserializer;
+import com.anvisero.movieservice.deserializer.LongDeserializer;
 import com.anvisero.movieservice.deserializer.MovieGenreEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.deserializer.MpaaRatingEnumLengthRestrictedDeserializer;
 import com.anvisero.movieservice.model.enums.MovieGenre;
@@ -19,8 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -45,7 +45,8 @@ public class MovieDto {
 
     @NotNull(message = "Number of Oscars cannot be empty")
     @PositiveOrZero(message = "Number of Oscars must be positive or zero")
-    @Max(value = 100, message = "Number of Oscars cannot be more than 100")
+//    @Max(value = 100, message = "Number of Oscars cannot be more than 100")
+    @JsonDeserialize(using = LongDeserializer.class)
     @JacksonXmlProperty(localName = "oscarsCount")
     private Long oscarsCount;
 
@@ -66,7 +67,7 @@ public class MovieDto {
 
     @NotNull(message = "Please specify the movie duration")
     @Positive(message = "Movie duration must be greater than zero")
-    @Max(value = 500, message = "Movie duration cannot exceed 500 minutes")
+    @JsonDeserialize(using = IntegerDeserializer.class)
     @JacksonXmlProperty(localName = "duration")
     private Integer duration;
 }

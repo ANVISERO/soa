@@ -4,10 +4,12 @@ import com.anvisero.movieservice.dto.CoordinatesDto;
 import com.anvisero.movieservice.model.Coordinates;
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+
 @UtilityClass
 public class CoordinatesMapper {
 
-    public Coordinates coordinatesRequestToCoordinates(CoordinatesDto coordinatesDto) {
+    public Coordinates coordinatesRequestToCoordinates(CoordinatesDto coordinatesDto, Double x) {
         if (coordinatesDto == null) {
             return null;
         }
@@ -15,7 +17,7 @@ public class CoordinatesMapper {
         Coordinates.CoordinatesBuilder coordinates = Coordinates.builder();
 
         if (coordinatesDto.getX() != null) {
-            coordinates.x(coordinatesDto.getX());
+            coordinates.x(x);
         }
         if (coordinatesDto.getY() != null) {
             coordinates.y(coordinatesDto.getY());
@@ -31,7 +33,7 @@ public class CoordinatesMapper {
 
         CoordinatesDto coordinatesDto = new CoordinatesDto();
 
-        coordinatesDto.setX(coordinates.getX());
+        coordinatesDto.setX(BigDecimal.valueOf(coordinates.getX()));
         coordinatesDto.setY(coordinates.getY());
 
         return coordinatesDto;

@@ -7,6 +7,9 @@ import com.anvisero.movieservice.dto.MovieDtoResponse;
 import com.anvisero.movieservice.dto.MoviesHonoredByLengthResponse;
 import com.anvisero.movieservice.dto.PersonDto;
 import com.anvisero.movieservice.dto.SearchResponse;
+import com.anvisero.movieservice.dto.enums.FieldType;
+import com.anvisero.movieservice.exception.UnprocessibleEntityException;
+import com.anvisero.movieservice.exception.parse.ParsingException;
 import com.anvisero.movieservice.model.Coordinates;
 import com.anvisero.movieservice.model.Movie;
 import com.anvisero.movieservice.model.Person;
@@ -18,6 +21,7 @@ import com.anvisero.movieservice.model.enums.MpaaRating;
 import com.anvisero.movieservice.repository.MoviePredicatesBuilder;
 import com.anvisero.movieservice.repository.MovieRepository;
 import com.anvisero.movieservice.util.mapper.MovieMapper;
+import com.anvisero.movieservice.util.validator.DoubleValidator;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPAExpressions;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,6 +40,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.anvisero.movieservice.dto.enums.SortingType.ASC;
+import static com.anvisero.movieservice.util.validator.DoubleValidator.validateDoubleValue;
+import static com.anvisero.movieservice.util.validator.DoubleValidator.validateFloatValue;
 
 @Service
 public class MovieService {
@@ -47,7 +53,9 @@ public class MovieService {
 
     @Transactional
     public MovieDtoResponse addMovie(MovieDto movieDto) {
-        Movie movie = MovieMapper.movieRequestToMovie(movieDto);
+        Double x = validateDoubleValue(movieDto.getCoordinates().getX(), FieldType.COORDINATE_X);
+        Float height = validateFloatValue(movieDto.getScreenwriter().getHeight(), FieldType.SCREENWRITER_HEIGHT);
+        Movie movie = MovieMapper.movieRequestToMovie(movieDto, x, height);
         movie.setCreationDate(LocalDateTime.now());
         Movie savedMovie = movieRepository.save(movie);
         MovieDtoResponse movieDtoResponse = MovieMapper.movieToMovieResponse(movie);
@@ -63,11 +71,13 @@ public class MovieService {
 
     @Transactional
     public MovieDtoResponse updateMovie(Long movieId, MovieDto movieDto) {
+        Double x = validateDoubleValue(movieDto.getCoordinates().getX(), FieldType.COORDINATE_X);
+        Float height = validateFloatValue(movieDto.getScreenwriter().getHeight(), FieldType.SCREENWRITER_HEIGHT);
         Movie movie = movieRepository.getReferenceById(movieId);
 
         movie.setName(movieDto.getName());
         movie.setCoordinates(Coordinates.builder()
-                .x(movieDto.getCoordinates().getX())
+                .x(x)
                 .y(movieDto.getCoordinates().getY())
                 .build());
         movie.setOscarsCount(movieDto.getOscarsCount());
@@ -76,7 +86,7 @@ public class MovieService {
         movie.setScreenwriter(Person.builder()
                 .name(movieDto.getScreenwriter().getName())
                 .birthday(movieDto.getScreenwriter().getBirthday())
-                .height(movieDto.getScreenwriter().getHeight())
+                .height(height)
                 .hairColor(movieDto.getScreenwriter().getHairColor())
                 .nationality(movieDto.getScreenwriter().getNationality())
                 .build());

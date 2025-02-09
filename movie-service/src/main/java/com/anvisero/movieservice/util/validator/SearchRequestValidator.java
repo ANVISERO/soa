@@ -4,6 +4,7 @@ import com.anvisero.movieservice.dto.Filter;
 import com.anvisero.movieservice.dto.FilterRequest;
 import com.anvisero.movieservice.dto.enums.FieldType;
 import com.anvisero.movieservice.dto.enums.FilterType;
+import com.anvisero.movieservice.exception.UnprocessibleEntityException;
 import com.anvisero.movieservice.exception.parse.ParsingException;
 import com.anvisero.movieservice.model.enums.Color;
 import com.anvisero.movieservice.model.enums.Country;
@@ -36,17 +37,33 @@ public class SearchRequestValidator {
         FilterType filterType = filter.getFilterType();
         String value = filter.getValue();
         if (field == FieldType.ID) {
-            Long id = validateLongValue(value, FieldType.ID, i);
+            Long id = validateLongValueId(value, FieldType.ID, i);
+            if (id < 1) {
+                throw new ParsingException(FieldType.ID.toString(),
+                        String.format("Invalid format for filters[%d].%s. Expected an integer number between 1 and 9,223,372,036,854,775,807.", i, FieldType.ID.toString()));
+            }
         } else if (field == FieldType.OSCARS_COUNT) {
             Long oscarsCount = validateLongValue(value, FieldType.OSCARS_COUNT, i);
+            if (oscarsCount < 0) {
+                throw new ParsingException(FieldType.OSCARS_COUNT.toString(),
+                        String.format("Invalid format for filters[%d].%s. Expected an integer number between 0 and 9,223,372,036,854,775,807.", i, FieldType.OSCARS_COUNT.toString()));
+            }
         } else if (field == FieldType.COORDINATE_Y) {
             Integer y = validateIntegerValue(value, FieldType.COORDINATE_Y, i);
         } else if (field == FieldType.DURATION) {
             Integer duration = validateIntegerValue(value, FieldType.DURATION, i);
+            if (duration < 1) {
+                throw new ParsingException(FieldType.DURATION.toString(),
+                        String.format("Invalid format for filters[%d].%s. Expected an integer number between 1 and 2,147,483,647.", i, FieldType.DURATION.toString()));
+            }
         } else if (field == FieldType.COORDINATE_X) {
             Double x = validateDoubleValue(value, FieldType.COORDINATE_X, i);
         } else if (field == FieldType.SCREENWRITER_HEIGHT) {
             Float screenwriterHeight = validateFloatValue(value, FieldType.SCREENWRITER_HEIGHT, i);
+//            if (screenwriterHeight <= 0) {
+//                throw new ParsingException(FieldType.SCREENWRITER_HEIGHT.toString(),
+//                        String.format("Invalid format for filters[%d].%s. Expected an integer number between 0 (not included) and 2,147,483,647.", i, FieldType.SCREENWRITER_HEIGHT.toString()));
+//            }
         } else if (field == FieldType.SCREENWRITER_BIRTHDAY) {
             LocalDate screenwriterBirthday = validateLocalDateValue(value, FieldType.SCREENWRITER_BIRTHDAY, i);
         } else if (field == FieldType.GENRE) {
@@ -67,7 +84,16 @@ public class SearchRequestValidator {
             Long parsedValue = Long.parseLong(value);
             return parsedValue;
         } catch (NumberFormatException e) {
-            throw new ParsingException(fieldType.toString(), String.format("Invalid format for filters[%d].%s. Expected an integer number between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807.", i, fieldType.toString()));
+            throw new ParsingException(fieldType.toString(), String.format("Invalid format for filters[%d].%s. Expected an integer number between 0 and 9,223,372,036,854,775,807.", i, fieldType.toString()));
+        }
+    }
+
+    private Long validateLongValueId(String value, FieldType fieldType, int i) {
+        try {
+            Long parsedValue = Long.parseLong(value);
+            return parsedValue;
+        } catch (NumberFormatException e) {
+            throw new ParsingException(fieldType.toString(), String.format("Invalid format for filters[%d].%s. Expected an integer number between 1 and 9,223,372,036,854,775,807.", i, fieldType.toString()));
         }
     }
 
@@ -89,7 +115,7 @@ public class SearchRequestValidator {
             Double parsedValue = Double.parseDouble(value);
 
             if (parsedValue < MIN_VALUE || parsedValue > MAX_VALUE) {
-                throw new ParsingException(fieldType.toString(),
+                throw new UnprocessibleEntityException(fieldType.toString(),
                         String.format("Value out of range for filters[%d].%s. Expected a value between -2,147,483,648 and 2,147,483,647.",
                                 index, fieldType.toString()));
             }
@@ -97,7 +123,7 @@ public class SearchRequestValidator {
             BigDecimal bd = new BigDecimal(value);
             int scale = bd.stripTrailingZeros().scale();
             if (scale > MAX_SCALE) {
-                throw new ParsingException(fieldType.toString(),
+                throw new UnprocessibleEntityException(fieldType.toString(),
                         String.format("Invalid precision for filters[%d].%s. Maximum 5 decimal places allowed.",
                                 index, fieldType.toString()));
             }
@@ -111,23 +137,23 @@ public class SearchRequestValidator {
     }
 
     public static Float validateFloatValue(String value, FieldType fieldType, int index) {
-        double MIN_VALUE = -2_147_483_648.0;
-        double MAX_VALUE = 2_147_483_647.0;
+        float MIN_VALUE = 0;
+        float MAX_VALUE = 2_147_483_647.0F;
         final int MAX_SCALE = 5;
 
         try {
             Float parsedValue = Float.parseFloat(value);
 
-            if (parsedValue < MIN_VALUE || parsedValue > MAX_VALUE) {
-                throw new ParsingException(fieldType.toString(),
-                        String.format("Value out of range for filters[%d].%s. Expected a value between -2,147,483,648 and 2,147,483,647.",
+            if (parsedValue <= MIN_VALUE || parsedValue > MAX_VALUE) {
+                throw new UnprocessibleEntityException(fieldType.toString(),
+                        String.format("Value out of range for filters[%d].%s. Expected a value between 0 (not included) and 2,147,483,647.",
                                 index, fieldType.toString()));
             }
 
             BigDecimal bd = new BigDecimal(value);
             int scale = bd.stripTrailingZeros().scale();
             if (scale > MAX_SCALE) {
-                throw new ParsingException(fieldType.toString(),
+                throw new UnprocessibleEntityException(fieldType.toString(),
                         String.format("Invalid precision for filters[%d].%s. Maximum 5 decimal places allowed.",
                                 index, fieldType.toString()));
             }

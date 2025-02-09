@@ -7,12 +7,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import java.io.IOException;
 
-public class IntegerDeserializer extends JsonDeserializer<Integer> {
-
-    private static final int MAX_LENGTH = 11;
+public class LongDeserializer extends JsonDeserializer<Long> {
 
     @Override
-    public Integer deserialize(JsonParser p, DeserializationContext context) throws IOException {
+    public Long deserialize(JsonParser p, DeserializationContext context) throws IOException {
         String value = p.getText();
         String fieldName = context.getParser().currentName();
         String parentField = p.getParsingContext().getParent() != null
@@ -21,16 +19,12 @@ public class IntegerDeserializer extends JsonDeserializer<Integer> {
 
         String fieldFullName = parentField != null ? parentField + "." + fieldName : fieldName;
 
-//        if (value.length() > MAX_LENGTH) {
-//            throw JsonMappingException.from(p,
-//                    "Value length exceeds maximum allowed limit of " + MAX_LENGTH + " characters");
-//        }
 
         try {
-            int parsedValue = Integer.parseInt(value);
+            Long parsedValue = Long.parseLong(value);
             return parsedValue;
         } catch (NumberFormatException e) {
-            throw JsonMappingException.from(p, "Invalid format for " + fieldFullName + ". Expected a valid numeric value between 1 and 2,147,483,647.");
+            throw JsonMappingException.from(p, "Invalid format for " + fieldFullName + ". Expected a valid numeric value between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807.");
         }
     }
 }
