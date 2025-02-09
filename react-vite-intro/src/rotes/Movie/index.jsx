@@ -4,7 +4,7 @@ import AppBody from "../../components/containers/AppBody/index.jsx";
 import Footer from "../../components/containers/Sections/Footer/index.jsx";
 import Header from "../../components/containers/Sections/Header/index.jsx";
 import AppContainer from "../../components/containers/AppContainer/index.jsx";
-import {AutoComplete, Button, DatePicker, Form, Input, Modal, notification, Select, Table} from "antd";
+import {AutoComplete, Button, DatePicker, Form, Input, message, Modal, notification, Select, Table} from "antd";
 import Sort from "../../components/containers/Sections/Sort/index.jsx";
 import Filter from "../../components/containers/Sections/Filter/index.jsx";
 import dayjs from "dayjs";
@@ -49,6 +49,40 @@ function parseSearchResponse(xml) {
     return {movies, totalPages};
 }
 
+function parseAwardResponse(xml) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xml, "application/xml");
+
+    const movies = Array.from(xmlDoc.getElementsByTagName("movie")).map(movieNode => {
+        const id = parseInt(movieNode.getElementsByTagName("id")[0].textContent);
+        const name = movieNode.getElementsByTagName("name")[0].textContent;
+        const x = parseFloat(movieNode.getElementsByTagName("x")[0].textContent);
+        const y = parseFloat(movieNode.getElementsByTagName("y")[0].textContent);
+        const coordinates = {x, y};
+
+        // const creationDate = formatDateTimeString(movieNode.getElementsByTagName("creationDate")[0]?.textContent || null);
+        const creationDate = movieNode.getElementsByTagName("creationDate")[0]?.textContent || null;
+
+        const oscarsCount = parseInt(movieNode.getElementsByTagName("oscarsCount")[0].textContent);
+        const genre = movieNode.getElementsByTagName("genre")[0].textContent;
+        const mpaaRating = movieNode.getElementsByTagName("mpaaRating")[0].textContent;
+
+        const screenwriterNode = movieNode.getElementsByTagName("screenwriter")[0];
+        const screenwriter = {
+            name: screenwriterNode.getElementsByTagName("name")[0].textContent,
+            birthday: screenwriterNode.getElementsByTagName("birthday")[0].textContent,
+            height: parseFloat(screenwriterNode.getElementsByTagName("height")[0].textContent),
+            hairColor: screenwriterNode.getElementsByTagName("hairColor")[0].textContent,
+            nationality: screenwriterNode.getElementsByTagName("nationality")[0].textContent
+        };
+
+        const duration = parseInt(movieNode.getElementsByTagName("duration")[0].textContent);
+
+        return {id, name, coordinates, creationDate, oscarsCount, genre, mpaaRating, screenwriter, duration};
+    });
+
+    return movies;
+}
 
 function Movie() {
 
@@ -65,6 +99,8 @@ function Movie() {
     const [errorMessages, setErrorMessages] = useState({});
     const [filters, setFilters] = useState([{criteria: "id", operator: "EQ", value: ""}]);
     const [loadedEnums, setLoadedEnums] = useState(false);
+    const [filterChange, setFilterChange] = useState(false);
+    const [sortChange, setSortChange] = useState(false);
     const columns = [
         {
             title: "ID",
@@ -178,10 +214,10 @@ function Movie() {
                     title: "Height",
                     dataIndex: ["screenwriter", "height"],
                     key: "screenwriter.height",
-                    width: 80,
+                    width: 90,
                     align: "center",
                     onCell: () => ({
-                        style: {minWidth: 80, maxWidth: 80},
+                        style: {minWidth: 90, maxWidth: 90},
                     }),
                 },
                 {
@@ -228,11 +264,13 @@ function Movie() {
     const [movieToCreate, setMovieToCreate] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCreateOpen, setIsModalCreateOpen] = useState(false);
+    const [isModalAwardOpen, setIsModalAwardOpen] = useState(false);
     const [form] = Form.useForm();
     const [formCreate] = Form.useForm();
+    const [formAward] = Form.useForm();
     const [enumOptions, setEnumOptions] = useState({
-        hairColor: [""],
-        nationality: [""],
+        "screenwriter.hairColor": [""],
+        "screenwriter.nationality": [""],
         genre: [""],
         mpaaRating: [""],
     });
@@ -262,8 +300,8 @@ function Movie() {
                     const ratings = parseEnumResponse(responses[3], "rating");
 
                     setEnumOptions({
-                        hairColor: colors,
-                        nationality: countries,
+                        "screenwriter.hairColor": colors,
+                        "screenwriter.nationality": countries,
                         genre: genres,
                         mpaaRating: ratings,
                     });
@@ -353,6 +391,8 @@ function Movie() {
             setMovies(movies);
             setTotalCount(totalPages * pageSize);
             setTotalPages(totalPages);
+            setFilterChange(false);
+            setSortChange(false);
 
             notification.success({
                 message: "Data uploaded successfully",
@@ -372,7 +412,8 @@ function Movie() {
     };
 
     const isValidLong = (value) => {
-        const longMin = BigInt("-9223372036854775808");
+        // const longMin = BigInt("-9223372036854775808");
+        const longMin = BigInt("0");
         const longMax = BigInt("9223372036854775807");
 
         if (typeof value !== "string" && typeof value !== "number") return false;
@@ -445,18 +486,27 @@ function Movie() {
             filters.forEach((filter) => {
                 if (!filter.value) {
                     newErrors[filter.id] = "Field can not be empty";
-                } else if ((filter.criteria === "id" || filter.criteria === "oscarsCount") && !isValidLong(filter.value)) {
+                } else if ((filter.criteria === "id") && !isValidLong(filter.value)) {
                     newErrors[filter.id] =
-                        "Expected an integer number between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807";
-                } else if ((filter.criteria === "coordinates.y" || filter.criteria === "duration") && !isValidInteger(filter.value)) {
+                        "Expected an integer number between 1 and 9,223,372,036,854,775,807";
+                } else if (filter.criteria === "oscarsCount" && (!isValidLong(filter.value) || filter.value < 0)) {
+                    newErrors[filter.id] =
+                        "Expected an integer number between 0 and 9,223,372,036,854,775,807";
+                } else if (filter.criteria === "coordinates.y" && !isValidInteger(filter.value)) {
                     newErrors[filter.id] =
                         "Expected an integer number between -2,147,483,648 and 2,147,483,647";
+                } else if (filter.criteria === "duration" && (!isValidInteger(filter.value) || filter.value <= 0)) {
+                    newErrors[filter.id] =
+                        "Expected an integer number between 1 and 2,147,483,647";
                 } else if ((filter.criteria === "name" || filter.criteria === "screenwriter.name") && !isValidStringLength(filter.value)) {
                     newErrors[filter.id] =
                         "Value length exceeds maximum allowed limit of 255 characters"
                 } else if ((filter.criteria === "coordinates.x" || filter.criteria === "screenwriter.height") && !isValidDouble(filter.value)) {
                     newErrors[filter.id] =
                         "Expected a numeric value between -2,147,483,648 and 2,147,483,647. Maximum 5 decimal places allowed.";
+                } else if (filter.criteria === "screenwriter.height" && (!isValidDouble(filter.value) || filter.value < 0)) {
+                    newErrors[filter.id] =
+                        "Expected a numeric value between 0 and 2,147,483,647. Maximum 5 decimal places allowed.";
                 }
             });
         });
@@ -471,10 +521,11 @@ function Movie() {
         }
 
         setLoading(true);
+        setCurrentPage(0);
 
         const xmlInput = `
         <FilterRequest>
-            <page>${currentPage - 1}</page>
+            <page>0</page>
             <pageSize>${pageSize}</pageSize>
             ${sortParams}
             ${createFilterXML(filters)}
@@ -489,23 +540,6 @@ function Movie() {
                 body: xmlInput
             });
 
-
-            if (!response.ok) {
-                const [errorData, setErrorData] = useState(null);
-                const parseXML = (xml) => {
-                    const parser = new XMLParser();
-                    const jsonObj = parser.parse(xml);
-                    setErrorData(jsonObj.Error);
-                };
-
-                notification.success({
-                    message: response.statusText + " " + errorData.message,
-                    description: 'Фильм был успешно удалён из базы данных.',
-                    placement: 'center',
-                });
-                // throw new Error(`Ошибка: ${response.statusText}`);
-            }
-
             const responseText = await response.text();
             const {movies, totalPages} = parseSearchResponse(responseText);
 
@@ -513,10 +547,13 @@ function Movie() {
             setTotalCount(totalPages * pageSize);
             setTotalPages(totalPages);
 
+            setFilterChange(false);
+            setSortChange(false);
+
             // message.success("Данные успешно получены!");
             notification.success({
                 message: "Data uploaded successfully",
-                // description: 'Фильм был успешно удалён из базы данных.',
+                description: 'Data found according filters and sorts',
                 placement: 'topRight',
             });
         } catch (error) {
@@ -531,25 +568,20 @@ function Movie() {
         }
     };
 
-    function changePageSize(value) {
-        setPageSize(value);
-        setCurrentPage(1);
-        setTotalCount(totalPages * pageSize);
-    }
-
-    const handlePageSizeChange = (pageSize) => {
-        const numericValue = parseInt(pageSize, 10);
-        if (!isNaN(numericValue) && numericValue > 0) {
-            changePageSize(numericValue);
-        }
-    };
-
     function setSortString(params) {
         setSortParams(params.slice());
     }
 
     function setFilterString(params) {
         setFilters(params.slice());
+    }
+
+    function setFilterChangeValue(params) {
+        setFilterChange(params);
+    }
+
+    function setSortChangeValue(params) {
+        setSortChange(params);
     }
 
     const parseEnumResponse = (xml, tag) => {
@@ -611,25 +643,6 @@ function Movie() {
                     "Content-Type": "application/xml",
                 },
             });
-            console.log("after response")
-
-            if (response.status !== 200) {
-                const [errorData, setErrorData] = useState(null);
-                const parseXML = (xml) => {
-                    const parser = new XMLParser();
-                    const jsonObj = parser.parse(xml);
-                    setErrorData(jsonObj.Error);
-                };
-                console.log("before notification")
-
-                notification.success({
-                    message: response.statusText + " " + errorData.message,
-                    description: 'Фильм был успешно удалён из базы данных.',
-                    placement: 'center',
-                });
-                console.log("after notification")
-                // throw new Error(`Ошибка: ${response.statusText}`);
-            }
 
             const responseText = await response.data;
 
@@ -772,6 +785,7 @@ function Movie() {
             //     return newMovies;
             // });
 
+
             console.log("Success:", response.data);
             notification.success({
                 message: 'Movie created successfully',
@@ -784,6 +798,53 @@ function Movie() {
             setIsModalCreateOpen(false);
         } catch (error) {
             console.error("Error:", error);
+        }
+    };
+
+    const handleAwardSave = async () => {
+        try {
+            const values = await formAward.validateFields();
+            const minLength = values.duration;
+
+            if (!minLength || isNaN(minLength)) {
+                return;
+            }
+
+            const response = await axios.patch(
+                `http://localhost:8765/api/v1/movies/honor-by-length/${minLength}/oscars-to-add`,
+                {},
+                {
+                    headers: {
+                        "Content-Type": "application/xml"
+                    }
+                }
+            );
+
+            const movies = parseAwardResponse(response.data);
+
+            notification.success({
+                message: "Movies awarded successfully",
+                description: `Amount of awarded movies – ${movies.length}`,
+                placement: "topRight",
+            });
+
+            handleAwardCancel();
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 404) {
+                    notification.error({
+                        message: "No movies found for update",
+                        // description: "Фильмы не найдены для обновления.",
+                        placement: "topRight",
+                    });
+                } else {
+                    notification.error({
+                        message: `Error ${error.response.status}`,
+                        description: error.response.data?.message || "Произошла ошибка при обновлении.",
+                        placement: "topRight",
+                    });
+                }
+            }
         }
     };
 
@@ -843,6 +904,11 @@ function Movie() {
         formCreate.setFieldsValue(movie);
     };
 
+    const showAwardModal = () => {
+
+        setIsModalAwardOpen(true);
+    };
+
     const handleCancel = () => {
         const movie = {
             Movie: {
@@ -869,6 +935,95 @@ function Movie() {
         formCreate.resetFields();
     };
 
+    const handleAwardCancel = () => {
+        setIsModalAwardOpen(false);
+        formAward.resetFields();
+    };
+
+    const sendXmlRequestPagination = async (page, size) => {
+        if (!validateFilters()) {
+            return;
+        }
+
+        setLoading(true);
+
+        const xmlInput = `
+        <FilterRequest>
+            <page>${page - 1}</page>
+            <pageSize>${size}</pageSize>
+            ${sortParams}
+            ${createFilterXML(filters)}
+        </FilterRequest>`;
+
+        try {
+            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/xml",
+                },
+                body: xmlInput
+            });
+
+            const responseText = await response.text();
+            if (!response.ok) {
+                const parser = new XMLParser();
+                const jsonObj = parser.parse(responseText);
+                const errorMessage = jsonObj?.Error?.message || "Unknown error";
+
+                notification.error({
+                    message: `Error ${response.status}: ${errorMessage}`,
+                    placement: "topRight",
+                });
+                return;
+            }
+
+            const { movies, totalPages } = parseSearchResponse(responseText);
+
+            setMovies(movies);
+            setTotalCount(totalPages * size);
+            setTotalPages(totalPages);
+
+            setFilterChange(false)
+            setSortChange(false)
+
+            notification.success({
+                message: "Data uploaded successfully",
+                placement: "topRight",
+            });
+        } catch (error) {
+            notification.error({
+                message: `Data upload error: ${error.message}`,
+                placement: "topRight",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePageChange = (page, pageSize) => {
+        console.log(" handlePageChange page" + page)
+        console.log(" handlePageChange pageSize" + pageSize)
+        if (!validateFilters()) {
+            return;
+        }
+        console.log(filterChange)
+        if (filterChange) {
+            page = 1;
+        }
+        setCurrentPage(page);
+        sendXmlRequestPagination(page, pageSize);
+    };
+
+    const handlePageSizeChange = (current, size) => {
+        console.log("current" + current)
+        console.log("size" + size)
+        if (!validateFilters()) {
+            return;
+        }
+        setPageSize(size);
+        setCurrentPage(1);
+    };
+
     return (
         <AppBody style={{margin: 0, padding: 0}}>
             <Header logo="home" addToScroll={addToScroll} removeToScroll={removeToScroll} tasks={false}>
@@ -877,7 +1032,41 @@ function Movie() {
                 <Button type="primary" onClick={showAddModal} style={{marginBottom: 5, marginTop: 5}}>
                     Create movie
                 </Button>
+                <Button type="primary" onClick={showAwardModal} style={{marginBottom: 5, marginTop: 5, marginRight: 100}}>
+                   Award
+                </Button>
             </div>
+            <Modal
+                title={<div style={{textAlign: "center", width: "100%"}}>Award additionally</div>}
+                open={isModalAwardOpen}
+                onCancel={() => handleAwardCancel()}
+                footer={[
+                    <Button key="cancel" onClick={() => handleAwardCancel()}>
+                        Cancel
+                    </Button>,
+                    <Button key="save" type="primary" onClick={handleAwardSave}>
+                        Award
+                    </Button>,
+                ]}
+                centered
+            >
+                <Form form={formAward} layout="vertical">
+                    <Form.Item label="Minimal duration to award (minutes)" name="duration"
+                               rules={[
+                                   {required: true, message: "Please input the duration!", whitespace: true},
+                                   {
+                                       validator: (_, value) => {
+                                           if (value && (!isValidInteger(value) || value < 0)) {
+                                               return Promise.reject("Expected an integer number between 0 and 2,147,483,647!");
+                                           }
+                                           return Promise.resolve();
+                                       },
+                                   },
+                               ]}>
+                        <Input placeholder="Input amount of minutes" style={{width: "220px"}}/>
+                    </Form.Item>
+                </Form>
+            </Modal>
             <Modal
                 title={<div style={{textAlign: "center", width: "100%"}}>Create movie</div>}
                 open={isModalCreateOpen}
@@ -941,8 +1130,8 @@ function Movie() {
                                    {required: true, message: "Please input oscars count!"},
                                    {
                                        validator: (_, value) => {
-                                           if (value && !isValidLong(value)) {
-                                               return Promise.reject("Expected an integer number between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807!");
+                                           if (value && (!isValidLong(value) || value < 0)) {
+                                               return Promise.reject("Expected an integer number between 0 and 9,223,372,036,854,775,807!");
                                            }
                                            return Promise.resolve();
                                        },
@@ -997,7 +1186,7 @@ function Movie() {
                                         return Promise.resolve();
                                     }
                                     const today = dayjs().startOf("day");
-                                    return value.isAfter(today) // Запрещаем сегодня и будущее
+                                    return value.isAfter(today)
                                         ? Promise.reject("Birthday must be before today!")
                                         : Promise.resolve();
                                 },
@@ -1011,7 +1200,7 @@ function Movie() {
                         <DatePicker
                             style={{width: "220px"}}
                             format="YYYY-MM-DD"
-                            disabledDate={(current) => current && current.isAfter(dayjs().startOf("day"))} // Запрещаем сегодня и будущее
+                            disabledDate={(current) => current && current.isAfter(dayjs().startOf("day"))}
                         />
                     </Form.Item>
                     <Form.Item label="Screenwriter height" name={["screenwriter", "height"]}
@@ -1019,8 +1208,8 @@ function Movie() {
                                    {required: true, message: "Please input screenwriter height!"},
                                    {
                                        validator: (_, value) => {
-                                           if (value && !isValidDouble(value)) {
-                                               return Promise.reject("Expected a numeric value between -2,147,483,648 and 2,147,483,647. Maximum 5 decimal places allowed!");
+                                           if (value && (!isValidDouble(value) || value <= 0)) {
+                                               return Promise.reject("Expected a numeric value between 0 (not included) and 2,147,483,647. Maximum 5 decimal places allowed!");
                                            }
                                            return Promise.resolve();
                                        },
@@ -1031,7 +1220,7 @@ function Movie() {
                     <Form.Item label="Screenwriter hair color" name={["screenwriter", "hairColor"]}>
                         <Select style={{width: "220px"}} placeholder="Select an option">
                             <Select.Option value="">-- Select an option --</Select.Option>
-                            {enumOptions.hairColor && enumOptions.hairColor.map((hairColor) => (
+                            {enumOptions["screenwriter.hairColor"] && enumOptions["screenwriter.hairColor"].map((hairColor) => (
                                 <Select.Option key={hairColor} value={hairColor}>
                                     {hairColor}
                                 </Select.Option>
@@ -1041,7 +1230,7 @@ function Movie() {
                     <Form.Item label="Screenwriter nationality" name={["screenwriter", "nationality"]}>
                         <Select style={{width: "220px"}} placeholder="Select an option">
                             <Select.Option value="">-- Select an option --</Select.Option>
-                            {enumOptions.nationality && enumOptions.nationality.map((nationality) => (
+                            {enumOptions["screenwriter.nationality"] && enumOptions["screenwriter.nationality"].map((nationality) => (
                                 <Select.Option key={nationality} value={nationality}>
                                     {nationality}
                                 </Select.Option>
@@ -1237,7 +1426,7 @@ function Movie() {
                         <Form.Item label="Screenwriter hair color" name={["screenwriter", "hairColor"]}>
                             <Select style={{width: "220px"}}>
                                 <Select.Option value="">-- Select an option --</Select.Option>
-                                {enumOptions.hairColor.map((hairColor) => (
+                                {enumOptions["screenwriter.hairColor"].map((hairColor) => (
                                     <Select.Option key={hairColor} value={hairColor}>
                                         {hairColor}
                                     </Select.Option>
@@ -1247,7 +1436,7 @@ function Movie() {
                         <Form.Item label="Screenwriter nationality" name={["screenwriter", "nationality"]}>
                             <Select style={{width: "220px"}}>
                                 <Select.Option value="">-- Select an option --</Select.Option>
-                                {enumOptions.nationality.map((nationality) => (
+                                {enumOptions["screenwriter.nationality"].map((nationality) => (
                                     <Select.Option key={nationality} value={nationality}>
                                         {nationality}
                                     </Select.Option>
@@ -1281,7 +1470,7 @@ function Movie() {
                 <Table
                     dataSource={movies}
                     columns={columns}
-                    scroll={{x: 1200}}
+                    scroll={{ x: 1200 }}
                     rowKey="id"
                     loading={loading}
                     bordered={true}
@@ -1290,40 +1479,62 @@ function Movie() {
                     })}
                     pagination={{
                         total: totalCount,
-                        // total: movies.length,
                         pageSize: pageSize,
                         current: currentPage,
-                        onChange: (page) => {
-                            setCurrentPage(page);
-                            // sendXmlRequest();
-                        },
-                        showTotal: (total, range) =>
-                            `${range[0]}-${range[1]} of ${total} items, page size: ${pageSize}`
-                        // showTotal: (total, range) => range[0] === pageSize * (currentPage - 1) + movies.length
-                        //     ? `${range[0]} item, page size: ${pageSize}`
-                        //     : `${range[0]}-${pageSize * (currentPage - 1) + movies.length} items, page size: ${pageSize}`
+                        showSizeChanger: true,
+                        pageSizeOptions: ["5", "10", "20", "50"],
+                        onShowSizeChange: handlePageSizeChange,
+                        onChange: handlePageChange,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} фильмов`,
                     }}
                 />
-                <div className="page__size">
-                    <div className="select__box select__pagination">
-                        <p>Page Size: </p>
-                        <AutoComplete
-                            options={options}
-                            style={{width: 150}}
-                            placeholder="Select or enter"
-                            onChange={handlePageSizeChange}
-                            // filterOption={(inputValue, option) =>
-                            //     option?.value.toLowerCase().indexOf(inputValue.toLowerCase()) !== 0
-                            // }
-                            filterOption={(inputValue, option) =>
-                                option?.value.toLowerCase().includes(inputValue.toLowerCase())
-                            }
-                        />
-                    </div>
-                </div>
+                {/*<Table*/}
+                {/*    dataSource={movies}*/}
+                {/*    columns={columns}*/}
+                {/*    scroll={{x: 1200}}*/}
+                {/*    rowKey="id"*/}
+                {/*    loading={loading}*/}
+                {/*    bordered={true}*/}
+                {/*    onRow={(record) => ({*/}
+                {/*        onClick: () => handleRowClick(record),*/}
+                {/*    })}*/}
+                {/*    pagination={{*/}
+                {/*        total: totalCount,*/}
+                {/*        // total: movies.length,*/}
+                {/*        pageSize: pageSize,*/}
+                {/*        current: currentPage,*/}
+                {/*        onChange: (page) => {*/}
+                {/*            setCurrentPage(page);*/}
+                {/*            // sendXmlRequest();*/}
+                {/*        },*/}
+                {/*        showTotal: (total, range) =>*/}
+                {/*            `${range[0]}-${range[1]} of ${total} items, page size: ${pageSize}`*/}
+                {/*        // showTotal: (total, range) => range[0] === pageSize * (currentPage - 1) + movies.length*/}
+                {/*        //     ? `${range[0]} item, page size: ${pageSize}`*/}
+                {/*        //     : `${range[0]}-${pageSize * (currentPage - 1) + movies.length} items, page size: ${pageSize}`*/}
+                {/*    }}*/}
+                {/*/>*/}
+                {/*<div className="page__size">*/}
+                {/*    <div className="select__box select__pagination">*/}
+                {/*        <p>Page Size: </p>*/}
+                {/*        <AutoComplete*/}
+                {/*            options={options}*/}
+                {/*            style={{width: 150}}*/}
+                {/*            placeholder="Select or enter"*/}
+                {/*            onChange={handlePageSizeChange}*/}
+                {/*            // filterOption={(inputValue, option) =>*/}
+                {/*            //     option?.value.toLowerCase().indexOf(inputValue.toLowerCase()) !== 0*/}
+                {/*            // }*/}
+                {/*            filterOption={(inputValue, option) =>*/}
+                {/*                option?.value.toLowerCase().includes(inputValue.toLowerCase())*/}
+                {/*            }*/}
+                {/*        />*/}
+                {/*    </div>*/}
+                {/*</div>*/}
 
                 <div className="wrapper sort">
-                    <Sort sortUpdate={setSortString}>
+                    <Sort sortUpdate={setSortString}
+                          sortChange={setSortChangeValue}>
                         <Select.Option value="id">ID</Select.Option>
                         <Select.Option value="name">Name</Select.Option>
                         <Select.Option value="coordinates.x">X</Select.Option>
@@ -1343,6 +1554,8 @@ function Movie() {
 
                 <div className="wrapper filter">
                     <Filter filtersUpdate={setFilterString}
+                            filterChange={setFilterChangeValue}
+                            filterChangeState={filterChange}
                             emptyFields={emptyFilters}
                             setEmptyFields={setEmptyFilters}
                             errorMessages={errorMessages}
@@ -1375,7 +1588,7 @@ function Movie() {
                     loading={loading}
                     style={{marginTop: "10px"}}
                 >
-                    Save filters and sorts
+                    Search
                 </Button>
             </AppContainer>
             <Footer/>

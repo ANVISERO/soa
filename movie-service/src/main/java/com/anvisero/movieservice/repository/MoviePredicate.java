@@ -118,7 +118,7 @@ public class MoviePredicate {
                 case EQ:
                     return path.eq(value);
                 case NE:
-                    return path.ne(value);
+                    return path.ne(value).or(path.isNull());
                 case GT:
                     return path.gt(value);
                 case GTE:
@@ -180,7 +180,7 @@ public class MoviePredicate {
                 case EQ:
                     return path.eq(value);
                 case NE:
-                    return path.ne(value);
+                    return path.ne(value).or(path.isNull());
             }
         } else if (filter.getField() == SCREENWRITER_NATIONALITY) {
             EnumPath<Country> path = entityPath.getEnum(filter.getField().toString(), Country.class);
@@ -190,7 +190,7 @@ public class MoviePredicate {
                 case EQ:
                     return path.eq(value);
                 case NE:
-                    return path.ne(value);
+                    return path.ne(value).or(path.isNull());
             }
         } else {
             StringPath path = entityPath.getString(filter.getField().toString());
@@ -203,6 +203,8 @@ public class MoviePredicate {
                     return path.ne(value);
                 case SUBSTR:
                     return path.containsIgnoreCase(value);
+                case NSUBSTR:
+                    return path.notLike("%" + value + "%").or(path.isNull());
             }
         }
         return null;

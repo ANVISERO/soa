@@ -60,6 +60,7 @@ public class MovieDto {
     private MpaaRating mpaaRating;
 
     @Valid
+    @NotNull(message = "Screenwriter cannot be empty")
     @JacksonXmlProperty(localName = "screenwriter")
     private PersonDto screenwriter;
 

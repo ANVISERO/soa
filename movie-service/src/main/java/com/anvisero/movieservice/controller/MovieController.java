@@ -132,7 +132,7 @@ public class MovieController {
     @PatchMapping(value = "/honor-by-length/{min-length}/oscars-to-add", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<MoviesHonoredByLengthResponse> additionallyAward(
             @PathVariable("min-length")
-            @Min(value = 1, message = "ID must be greater than 0")
+            @Min(value = 0, message = "ID must be equal or greater than 0")
             @Max(value = Long.MAX_VALUE, message = "ID must be less than or equal to " + Long.MAX_VALUE)
             Integer minLength) {
         MoviesHonoredByLengthResponse personResponse = movieService.additionallyAward(minLength);

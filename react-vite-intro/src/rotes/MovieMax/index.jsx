@@ -160,10 +160,10 @@ function MovieMax() {
                     title: "Height",
                     dataIndex: ["screenwriter", "height"],
                     key: "screenwriter.height",
-                    width: 80,
+                    width: 90,
                     align: "center",
                     onCell: () => ({
-                        style: {minWidth: 80, maxWidth: 80},
+                        style: {minWidth: 90, maxWidth: 90},
                     }),
                 },
                 {

@@ -6,9 +6,12 @@ import RemoveIcon from "../../../../assets/icons/remove.svg";
 import { Select } from "antd";
 
 function Sort(props) {
-    const [sort, setSort] = useState([{ value: "id", order: "asc" }]);
+    const [sort, setSort] = useState([]);
+    const [sortChange, setSortChange] = useState(false);
+
 
     useEffect(() => {
+        props.sortChange(sortChange);
         const createSortingXML = () => {
             const xmlDocument = document.implementation.createDocument("", "", null);
 
@@ -39,14 +42,17 @@ function Sort(props) {
     }, [sort, props]);
 
     function handleAddSortCriteria() {
+        setSortChange(true)
         setSort([...sort, { value: "id", order: "asc" }]);
     }
 
     function handleRemoveSortCriteria(index) {
+        setSortChange(true)
         setSort(sort.filter((_, i) => i !== index));
     }
 
     function handleSortCriteriaChange(index, value) {
+        setSortChange(true)
         setSort(
             sort.map((criteria, i) =>
                 i === index ? { ...criteria, value } : criteria
@@ -55,6 +61,7 @@ function Sort(props) {
     }
 
     function handleOrderChange(index, order) {
+        setSortChange(true)
         setSort(
             sort.map((criteria, i) =>
                 i === index ? { ...criteria, order } : criteria

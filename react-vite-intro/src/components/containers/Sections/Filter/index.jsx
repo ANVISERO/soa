@@ -8,13 +8,18 @@ import RemoveIcon from "../../../../assets/icons/remove.svg";
 import {v4 as uuidv4} from "uuid";
 
 const Filter = (props) => {
-    const [filters, setFilters] = useState([
-        {id: uuidv4(), criteria: "id", operator: "EQ", value: ""}
-    ]);
+    const [filters, setFilters] = useState([]);
+    const [filterChange, setFilterChange] = useState(false);
 
     useEffect(() => {
+        console.log("filterChange " + filterChange);
         props.filtersUpdate(filters);
+        props.filterChange(filterChange);
     }, [filters]);
+
+    useEffect(() => {
+        props.filterChange(props.filterChangeState);
+    }, [props.filterChangeState]);
 
     const criteriaOptions = [
         {value: "id", type: "number", name: "ID"},
@@ -22,14 +27,14 @@ const Filter = (props) => {
         {value: "coordinates.x", type: "number", name: "X"},
         {value: "coordinates.y", type: "number", name: "Y"},
         {value: "creationDate", type: "dateTime", name: "Creation date"},
-        {value: "oscarsCount", type: "number", name: "Oscars Count"},
+        {value: "oscarsCount", type: "number", name: "Oscars count"},
         {value: "genre", type: "enum", name: "Genre"},
-        {value: "mpaaRating", type: "enum", name: "Mpaa Rating"},
+        {value: "mpaaRating", type: "enum", name: "Mpaa rating"},
         {value: "screenwriter.name", type: "string", name: "Screenwriter name"},
         {value: "screenwriter.birthday", type: "date", name: "Screenwriter birthday"},
         {value: "screenwriter.height", type: "number", name: "Screenwriter height"},
-        {value: "hairColor", type: "enum", name: "Screenwriter hair color"},
-        {value: "nationality", type: "enum", name: "Screenwriter nationality"},
+        {value: "screenwriter.hairColor", type: "enum", name: "Screenwriter hair color"},
+        {value: "screenwriter.nationality", type: "enum", name: "Screenwriter nationality"},
         {value: "duration", type: "number", name: "Duration"},
     ];
 
@@ -50,10 +55,12 @@ const Filter = (props) => {
     };
 
     const handleAddFilter = () => {
+        setFilterChange(true);
         setFilters([...filters, {id: uuidv4(), criteria: "id", operator: "EQ", value: ""}]);
     };
 
     const handleRemoveFilter = (id) => {
+        setFilterChange(true);
         setFilters(filters.filter((filter) => filter.id !== id));
         props.setErrorMessages((prev) => {
             const newErrors = {...prev};
@@ -64,6 +71,7 @@ const Filter = (props) => {
     };
 
     const handleFilterChange = (id, value) => {
+        setFilterChange(true);
         setFilters((prevFilters) =>
             prevFilters.map((filter) =>
                 filter.id === id ? {...filter, value} : filter
@@ -72,6 +80,7 @@ const Filter = (props) => {
     };
 
     const handleFilterCriteriaChange = (id, value) => {
+        setFilterChange(true);
         const newFilters = [...filters];
         const filterIndex = newFilters.findIndex((filter) => filter.id === id);
         if (filterIndex === -1) return;
@@ -86,6 +95,7 @@ const Filter = (props) => {
     };
 
     const handleFilterOperatorChange = (id, value) => {
+        setFilterChange(true);
         const newFilters = [...filters];
         const filterIndex = newFilters.findIndex((filter) => filter.id === id);
         if (filterIndex === -1) return;

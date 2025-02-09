@@ -57,7 +57,7 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:5173") // Домен вашего фронтенда
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Убедитесь, что опция OPTIONS включена
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // Убедитесь, что опция OPTIONS включена
                         .allowedHeaders("*")
                         .allowCredentials(true); // Если вы отправляете cookies или используются авторизационные заголовки
             }
