@@ -382,11 +382,34 @@ function Movie() {
             });
 
             if (!response.ok) {
-                throw new Error(`Ошибка: ${response.statusText}`);
+                if (response.status === 404) {
+                    notification.info({
+                        message: "Data not found",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                } else {
+                    notification.error({
+                        message: "Server error",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                }
             }
 
             const responseText = await response.text();
             const {movies, totalPages} = parseSearchResponse(responseText);
+
+            if (movies.length === 0) {
+                notification.info({
+                    message: "Data not found",
+                    // description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'topRight',
+                });
+                return;
+            }
 
             setMovies(movies);
             setTotalCount(totalPages * pageSize);
@@ -401,7 +424,7 @@ function Movie() {
             });
         } catch (error) {
             notification.error({
-                message: `Data upload error: ${error.message}`,
+                message: `Data upload error`,
                 // description: 'Фильм был успешно удалён из базы данных.',
                 placement: 'topRight',
             });
@@ -540,8 +563,35 @@ function Movie() {
                 body: xmlInput
             });
 
+            if (!response.ok) {
+                if (response.status === 404) {
+                    notification.info({
+                        message: "Data not found",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                } else {
+                    notification.error({
+                        message: "Server error",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                }
+            }
+
             const responseText = await response.text();
             const {movies, totalPages} = parseSearchResponse(responseText);
+
+            if (movies.length === 0) {
+                notification.info({
+                    message: "Data not found",
+                    // description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'topRight',
+                });
+                return;
+            }
 
             setMovies(movies);
             setTotalCount(totalPages * pageSize);
@@ -811,7 +861,7 @@ function Movie() {
             }
 
             const response = await axios.patch(
-                `http://localhost:8765/api/v1/movies/honor-by-length/${minLength}/oscars-to-add`,
+                `http://localhost:9090/api/v1/oscar/movies/honor-by-length/${minLength}/oscars-to-add`,
                 {},
                 {
                     headers: {
@@ -832,15 +882,15 @@ function Movie() {
         } catch (error) {
             if (error.response) {
                 if (error.response.status === 404) {
-                    notification.error({
-                        message: "No movies found for update",
+                    notification.info({
+                        message: "No movies found to award",
                         // description: "Фильмы не найдены для обновления.",
                         placement: "topRight",
                     });
                 } else {
                     notification.error({
-                        message: `Error ${error.response.status}`,
-                        description: error.response.data?.message || "Произошла ошибка при обновлении.",
+                        message: `Server Error`,
+                        // description: error.response.data?.message || "Произошла ошибка при обновлении.",
                         placement: "topRight",
                     });
                 }
@@ -964,20 +1014,47 @@ function Movie() {
                 body: xmlInput
             });
 
-            const responseText = await response.text();
             if (!response.ok) {
-                const parser = new XMLParser();
-                const jsonObj = parser.parse(responseText);
-                const errorMessage = jsonObj?.Error?.message || "Unknown error";
+                if (response.status === 404) {
+                    notification.info({
+                        message: "Data not found",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                } else {
+                    notification.error({
+                        message: "Server error",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                }
+            }
 
-                notification.error({
-                    message: `Error ${response.status}: ${errorMessage}`,
-                    placement: "topRight",
+            const responseText = await response.text();
+            // if (!response.ok) {
+            //     const parser = new XMLParser();
+            //     const jsonObj = parser.parse(responseText);
+            //     const errorMessage = jsonObj?.Error?.message || "Unknown error";
+            //
+            //     notification.error({
+            //         message: `Error ${response.status}: ${errorMessage}`,
+            //         placement: "topRight",
+            //     });
+            //     return;
+            // }
+
+            const { movies, totalPages } = parseSearchResponse(responseText);
+
+            if (movies.length === 0) {
+                notification.info({
+                    message: "Data not found",
+                    // description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'topRight',
                 });
                 return;
             }
-
-            const { movies, totalPages } = parseSearchResponse(responseText);
 
             setMovies(movies);
             setTotalCount(totalPages * size);

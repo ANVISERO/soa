@@ -104,15 +104,42 @@ function Loosers() {
         setLoading(true);
 
         try {
-            const response = await fetch("http://localhost:8765/api/v1/movies/directors/get-loosers", {
+            const response = await fetch("http://localhost:9090/api/v1/oscar/directors/get-loosers", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/xml",
                 }
             });
 
+            if (!response.ok) {
+                if (response.status === 503) {
+                    notification.error({
+                        message: "External Service Unavailable",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                } else {
+                    notification.error({
+                        message: "Server error",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                }
+            }
+
             const responseText = await response.text();
             const persons = parseSearchResponse(responseText);
+
+            if (persons.length === 0) {
+                notification.info({
+                    message: "Data not found",
+                    // description: 'Фильм был успешно удалён из базы данных.',
+                    placement: 'topRight',
+                });
+                return;
+            }
 
             setPersons(persons);
 
@@ -123,7 +150,7 @@ function Loosers() {
             });
         } catch (error) {
             notification.error({
-                message: `Data upload error: ${error.message}`,
+                message: `Data upload error`,
                 // description: 'Фильм был успешно удалён из базы данных.',
                 placement: 'topRight',
             });

@@ -1,6 +1,7 @@
 package com.anvisero.oscar.service;
 
 import com.anvisero.oscar.dto.MoviesHonoredByLengthResponse;
+import com.anvisero.oscar.exception.NotFoundException;
 import com.anvisero.oscar.http.Client;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ public class OscarService {
         this.client = client;
     }
 
-    public MoviesHonoredByLengthResponse additionallyAward(Integer minLength) {
+    public MoviesHonoredByLengthResponse additionallyAward(Integer minLength) throws NotFoundException {
         return client.additionallyAward(minLength);
     }
 }

@@ -2,6 +2,7 @@ package com.anvisero.oscar.http;
 
 import com.anvisero.oscar.dto.LoosersResponseList;
 import com.anvisero.oscar.dto.MoviesHonoredByLengthResponse;
+import com.anvisero.oscar.exception.NotFoundException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,7 +38,7 @@ public class Client {
         return response.getBody();
     }
 
-    public MoviesHonoredByLengthResponse additionallyAward(Integer minLength) {
+    public MoviesHonoredByLengthResponse additionallyAward(Integer minLength) throws NotFoundException {
         String url = BASE_URL + "honor-by-length/" + minLength + "/oscars-to-add";
 
         HttpHeaders headers = new HttpHeaders();
@@ -48,6 +49,10 @@ public class Client {
 
         ResponseEntity<MoviesHonoredByLengthResponse> response = restTemplate.exchange(
                 url, HttpMethod.PATCH, entity, MoviesHonoredByLengthResponse.class);
+
+        if (response.getBody() == null || response.getBody().getMovies() == null || response.getBody().getMovies().isEmpty()) {
+            throw new NotFoundException("Not found");
+        }
 
         return response.getBody();
     }

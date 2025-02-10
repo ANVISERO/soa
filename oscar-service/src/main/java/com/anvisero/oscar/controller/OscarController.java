@@ -2,6 +2,7 @@ package com.anvisero.oscar.controller;
 
 import com.anvisero.oscar.dto.LoosersResponseList;
 import com.anvisero.oscar.dto.MoviesHonoredByLengthResponse;
+import com.anvisero.oscar.exception.NotFoundException;
 import com.anvisero.oscar.service.DirectorService;
 import com.anvisero.oscar.service.OscarService;
 import org.springframework.http.MediaType;
@@ -31,7 +32,7 @@ public class OscarController {
     }
 
     @PatchMapping(value = "/movies/honor-by-length/{min-length}/oscars-to-add", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<MoviesHonoredByLengthResponse> additionallyAward(@PathVariable("min-length") Integer minLength) {
+    public ResponseEntity<MoviesHonoredByLengthResponse> additionallyAward(@PathVariable("min-length") Integer minLength) throws NotFoundException {
         MoviesHonoredByLengthResponse honoredMovies = oscarService.additionallyAward(minLength);
         return ResponseEntity.ok().body(honoredMovies);
     }

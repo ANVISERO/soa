@@ -231,6 +231,24 @@ function MovieMax() {
                 }
             });
 
+            if (!response.ok) {
+                if (response.status === 404) {
+                    notification.info({
+                        message: "Data not found",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                } else {
+                    notification.error({
+                        message: "Server error",
+                        // description: 'Фильм был успешно удалён из базы данных.',
+                        placement: 'topRight',
+                    });
+                    return;
+                }
+            }
+
             const responseText = await response.text();
             const movies = parseSearchResponse(responseText);
 

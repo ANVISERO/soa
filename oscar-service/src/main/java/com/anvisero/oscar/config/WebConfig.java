@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.time.format.DateTimeFormatter;
 
@@ -46,5 +48,19 @@ public class WebConfig {
 
         // Создаём и возвращаем HTTP Message Converter
         return new MappingJackson2XmlHttpMessageConverter(xmlMapper);
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173") // Домен вашего фронтенда
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // Убедитесь, что опция OPTIONS включена
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // Если вы отправляете cookies или используются авторизационные заголовки
+            }
+        };
     }
 }
