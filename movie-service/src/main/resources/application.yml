@@ -7,6 +7,8 @@ logging:
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
 server:
   port: 8765
+  servlet:
+    context-path: /
 #  ssl:
 #    key-store-type: PKCS12
 #    key-store: classpath:keystore/baeldung.p12
@@ -22,9 +24,10 @@ spring:
       on-profile: default
   datasource:
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/studs
     url: jdbc:postgresql://localhost:5432/postgres
-#    username: soa
-#    password: soa
+#    username: s336587
+#    password: 5XxvnvSl02KM6ZGD
   jpa:
     database: POSTGRESQL
     hibernate:

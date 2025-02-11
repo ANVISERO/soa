@@ -288,10 +288,10 @@ function Movie() {
                 setLoading(true);
                 try {
                     const responses = await Promise.all([
-                        fetch("http://localhost:8765/api/v1/movies/colors").then((res) => res.text()),
-                        fetch("http://localhost:8765/api/v1/movies/countries").then((res) => res.text()),
-                        fetch("http://localhost:8765/api/v1/movies/genres").then((res) => res.text()),
-                        fetch("http://localhost:8765/api/v1/movies/ratings").then((res) => res.text()),
+                        fetch("https://localhost:8765/movie/api/v1/movies/colors").then((res) => res.text()),
+                        fetch("https://localhost:8765/movie/api/v1/movies/countries").then((res) => res.text()),
+                        fetch("https://localhost:8765/movie/api/v1/movies/genres").then((res) => res.text()),
+                        fetch("https://localhost:8765/movie/api/v1/movies/ratings").then((res) => res.text()),
                     ]);
 
                     const colors = parseEnumResponse(responses[0], "color");
@@ -373,7 +373,7 @@ function Movie() {
         </FilterRequest>`;
 
         try {
-            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
+            const response = await fetch("https://localhost:8765/movie/api/v1/movies/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/xml",
@@ -555,7 +555,7 @@ function Movie() {
         </FilterRequest>`;
 
         try {
-            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
+            const response = await fetch("https://localhost:8765/movie/api/v1/movies/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/xml",
@@ -688,7 +688,7 @@ function Movie() {
 
             const movieId = selectedMovie.id;
 
-            const response = await axios.put(`http://localhost:8765/api/v1/movies/${movieId}`, xmlData, {
+            const response = await axios.put(`https://localhost:8765/movie/api/v1/movies/${movieId}`, xmlData, {
                 headers: {
                     "Content-Type": "application/xml",
                 },
@@ -787,7 +787,7 @@ function Movie() {
 
             console.log(xmlData);
 
-            const response = await axios.post(`http://localhost:8765/api/v1/movies`, xmlData, {
+            const response = await axios.post(`https://localhost:8765/movie/api/v1/movies`, xmlData, {
                 headers: {
                     "Content-Type": "application/xml",
                 },
@@ -861,7 +861,7 @@ function Movie() {
             }
 
             const response = await axios.patch(
-                `http://localhost:9090/api/v1/oscar/movies/honor-by-length/${minLength}/oscars-to-add`,
+                `https://localhost:9090/api/v1/oscar/movies/honor-by-length/${minLength}/oscars-to-add`,
                 {},
                 {
                     headers: {
@@ -901,7 +901,7 @@ function Movie() {
     const handleDelete = async () => {
         try {
             const movieId = selectedMovie.id;
-            const response = await axios.delete(`http://localhost:8765/api/v1/movies/${movieId}`);
+            const response = await axios.delete(`https://localhost:8765/movie/api/v1/movies/${movieId}`);
 
             if (response.status === 204) {
                 console.log("Фильм успешно удалён");
@@ -1006,7 +1006,7 @@ function Movie() {
         </FilterRequest>`;
 
         try {
-            const response = await fetch("http://localhost:8765/api/v1/movies/search", {
+            const response = await fetch("https://localhost:8765/movie/api/v1/movies/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/xml",

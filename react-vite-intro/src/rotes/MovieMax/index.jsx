@@ -224,7 +224,7 @@ function MovieMax() {
         setLoading(true);
 
         try {
-            const response = await fetch("http://localhost:8765/api/v1/movies/screenwriter/max", {
+            const response = await fetch("https://localhost:8765/movie/api/v1/movies/screenwriter/max", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/xml",
