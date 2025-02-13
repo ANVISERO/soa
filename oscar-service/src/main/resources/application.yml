@@ -1,8 +1,18 @@
 spring:
   application:
     name: oscar-service
+  ssl:
+    bundle:
+      pem:
+       client:
+          truststore:
+            certificate: mytruststore.p12
 server:
-  port: 9090
+  port: 9797
+#  ssl:
+#    trust-store: classpath:keystore/mytruststore.p12
+#    trust-store-password: changeit
+
 ##spring.datasource.url=jdbc:postgresql://localhost:5432/studs
 ##spring.datasource.username=
 ##spring.datasource.password=

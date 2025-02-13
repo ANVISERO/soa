@@ -3,6 +3,8 @@ package com.anvisero.oscar.http;
 import com.anvisero.oscar.dto.LoosersResponseList;
 import com.anvisero.oscar.dto.MoviesHonoredByLengthResponse;
 import com.anvisero.oscar.exception.NotFoundException;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,20 +14,36 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Collections;
 
 @Service
 public class Client {
-
-    static RestTemplate restTemplate;
+    private static final RestTemplate restTemplate;
+    private static final String BASE_URL = "https://localhost:8765/movie/api/v1/movies/";
 
     static {
-        restTemplate = new RestTemplate();
-        HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-        restTemplate.setRequestFactory(httpRequestFactory);
+        SSLConfigurationProvider provider = new SSLConfigurationProvider();
+        try {
+            SSLContext sslContext = provider.getSSLContext();
+            PoolingHttpClientConnectionManager connectionManager = provider.getConnectionManager(sslContext);
+            CloseableHttpClient httpClient = provider.createHttpClient(connectionManager);
+            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+            restTemplate = new RestTemplate(requestFactory);
+        } catch (CertificateException
+                 | KeyStoreException
+                 | IOException
+                 | NoSuchAlgorithmException
+                 | KeyManagementException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    private static final String BASE_URL = "http://localhost:8765/api/v1/movies/";
 
     public LoosersResponseList getLosers() {
         String url = BASE_URL + "directors/get-loosers";

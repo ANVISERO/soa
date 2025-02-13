@@ -104,7 +104,7 @@ function Loosers() {
         setLoading(true);
 
         try {
-            const response = await fetch("https://localhost:9090/api/v1/oscar/directors/get-loosers", {
+            const response = await fetch("https://localhost:9090/oscar/api/v1/oscar/directors/get-loosers", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/xml",
