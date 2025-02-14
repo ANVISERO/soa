@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
@@ -158,8 +159,21 @@ public class ApplicationExceptionHandler {
         return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({EntityNotFoundException.class, })
     public ResponseEntity<DefaultErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+        DefaultErrorResponse response = DefaultErrorResponse.builder()
+                .message("Not Found")
+                .time(LocalDateTime.now())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        return new ResponseEntity<>(response, headers, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({NoHandlerFoundException.class, })
+    public ResponseEntity<DefaultErrorResponse> handleEntityNotFoundException(NoHandlerFoundException ex) {
         DefaultErrorResponse response = DefaultErrorResponse.builder()
                 .message("Not Found")
                 .time(LocalDateTime.now())

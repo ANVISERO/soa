@@ -34,7 +34,7 @@ public class MovieDto {
     private Long id;
 
     @NotBlank(message = "Movie name cannot be empty")
-    @Size(max = 255, message = "Movie name cannot be longer than 255 characters")
+//    @Size(max = 255, message = "Movie name cannot be longer than 255 characters")
     @JacksonXmlProperty(localName = "name")
     private String name;
 
