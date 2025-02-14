@@ -1,0 +1,116 @@
+.button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: var(--button);
+    color: var(--background);
+    box-shadow: var(--shadow);
+
+    transition: all 0.2s ease-in-out;
+}
+
+.button:hover {
+    cursor: pointer;
+    background: var(--primary);
+    color: var(--hover);
+    box-shadow: var(--primary-shadow);
+}
+
+.button:hover .button__icon {
+    fill: var(--hover);
+}
+
+.button__text {
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: none;
+}
+
+.button__icon {
+    background-size: 1.5rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: var(--background);
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 0.2rem;
+}
+
+.header__button {
+    width: 128px;
+    height: 48px;
+}
+
+.default__button {
+    width: 192px;
+    height: 68px;
+    gap: 0.5rem;
+}
+
+.default__button .button__text {
+    font-size: 1rem;
+}
+
+.color__button {
+    box-shadow: var(--primary-shadow);
+    background: var(--primary);
+    width: 140px;
+    height: 54px;
+}
+
+.red__button {
+    box-shadow: var(--primary-shadow);
+    background: rgb(252, 86, 64);
+    width: 140px;
+    height: 54px;
+}
+
+.red__button:hover {
+    cursor: pointer;
+    background: rgb(245, 38, 11);
+    color: var(--hover);
+    box-shadow: var(--text-shadow);
+}
+
+.purple__button {
+    box-shadow: var(--primary-shadow);
+    background: #be9ded;
+    width: 140px;
+    height: 54px;
+}
+
+.purple__button:hover {
+    cursor: pointer;
+    background: #a565ff;
+    color: var(--hover);
+    box-shadow: var(--text-shadow);
+}
+
+.red__button:hover .button__icon {
+    fill: var(--background);
+    /*fill: var(--background);*/
+}
+@media (max-width: 1000px) {
+    .default__button {
+        width: 140px;
+        height: 54px;
+    }
+}
+
+@media (max-width: 670px) {
+    .header__button {
+        width: 248px;
+        height: 64px;
+        font-size: 1.5rem !important;
+    }
+    .header__button .button__text{
+        font-size: 1.5rem;
+    }
+}

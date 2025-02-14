@@ -1,0 +1,920 @@
+openapi: 3.0.3
+info:
+  title: Movie service REST endpoints
+  description: Movie service REST endpoints for SOA Lab1
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8080/api/v1'
+paths:
+  /movies:
+    post:
+      summary: Add new movie
+      description: Add new movie
+      operationId: addMovie
+      tags:
+        - Base movie operations
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Movie"
+      responses:
+        '201':
+          description: Returns the movie that was just added
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/MovieResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/xml:
+              schema:
+                xml: 
+                  name: Error
+                type: object
+                required:
+                  - message
+                  - invalidFields
+                  - time
+                properties:
+                  message:
+                    type: string
+                    example: Bad Request
+                  invalidFields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: oscarsCount
+                        reason:
+                          type: string
+                          example: oscarsCount must be a number
+                      xml:
+                        name: invalidField
+                    xml:
+                      wrapped: true
+                      name: invalidFields
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-09-13T00:00:13
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error422"
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /movies/{id}:
+    get:
+      summary: Get movie by id
+      description: Get movie by id
+      operationId: getMovieById
+      tags:
+        - Base movie operations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Movie id to find
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Returns the movie by id
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/MovieResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error400"
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Update movie by id
+      description: Update movie by id
+      operationId: updateMovieById
+      tags:
+        - Base movie operations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Movie id to update
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Movie"
+      responses:
+        '200':
+          description: Returns updated movie by id
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/MovieResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error400"
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error422"
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete movie by id
+      description: Delete movie by id
+      operationId: deleteMovieById
+      tags:
+        - Base movie operations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Movie id to delete
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      responses:
+        '204':
+          description: Movie was successfully deleted by id
+        '400':
+          description: Bad Request
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error400"
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /movies/search:
+    post:
+      summary: Get list of movies using filters and sorting
+      description: |
+        Get list of movies using filters and sorting.
+
+        **Filter:**
+
+        - **EQ** - equals (applicable to **number**, **string**, **date**, **enum**)
+        - **NE** - not equals (applicable to **number**, **string**, **date**, **enum**)
+        - **GT** - greater than (applicable to **number**, **date**)
+        - **GTE** - greater than or equals (applicable to **number**, **date**)
+        - **LT** - lower than (applicable to **number**, **date**)
+        - **LTE** - lower than or equals (applicable to **number**, **date**)
+        - **SUBSTR** - find string containing substring in field **value** (applicable to **string**)
+        - **NSUBSTR** - find string not containing substring in field **value** (applicable to **string**)
+        
+        Filters can be aplied to several fields.
+
+        **Sort:**
+
+        Sortings can be of two different types **asc** – ascending and **desc** – descending. 
+
+        **Sortings** and **Filters** can be aplied to several fields:
+
+          - id
+          - name
+          - coordinates.x
+          - coordinates.y
+          - creationDate
+          - oscarsCount
+          - genre
+          - mpaaRating
+          - screenwriter.name
+          - screenwriter.birthday
+          - screenwriter.height
+          - screenwriter.hairColor
+          - screenwriter.hairColor
+
+        **Pagination parameters**
+
+        **Page** – page number (0 or greater)
+
+        **PageSize** – amount of output items per page (1 or greater)
+
+      operationId: searchMovies
+      tags:
+        - Base movie operations
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/FilterRequest"
+      responses:
+        '200':
+          description: Returns list of movies
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/xml:
+              schema:
+                xml: 
+                  name: Error
+                type: object
+                required:
+                  - message
+                  - invalidFields
+                  - time
+                properties:
+                  message:
+                    type: string
+                    example: Bad Request
+                  invalidFields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: FilterRequest.page
+                        reason:
+                          type: string
+                          example: FilterRequest.page must be a number
+                      xml:
+                        name: invalidField
+                    xml:
+                      wrapped: true
+                      name: invalidFields
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-09-13T00:00:13
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/xml:
+              schema:
+                xml: 
+                  name: Error
+                type: object
+                required:
+                  - message
+                  - invalidFields
+                  - time
+                properties:
+                  message:
+                    type: string
+                    example: Unprocessable Entity
+                  invalidFields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: FilterRequest.page
+                        reason:
+                          type: string
+                          example: FilterRequest.page must be greater or equals to zero
+                      xml:
+                        name: invalidField
+                    xml:
+                      wrapped: true
+                      name: invalidFields
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-09-13T00:00:13
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /movies/screenwriter/max:
+    get:
+      summary: Return one (any) object whose "screenwriter.height" field value is the maximum.
+      description: Return one (any) object whose "screenwriter.height" field value is the maximum.
+      operationId: getScreenwriterMax
+      tags:
+        - Additional movie operations
+      responses:
+        '200':
+          description: Returns the movie whose "screenwriter.height" field value is the maximum
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/MoviesScreenwriterMaxResponse"
+        '404':
+          description: Not Found
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error404"
+        '414':
+          description: URI is too long
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error414"
+        '429':
+          description: Too Many Requests
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error429"
+        default:
+          description: Returns error code, message and time
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    MovieGenre:
+      type: string
+      enum:
+        - ACTION
+        - MUSICAL
+        - ADVENTURE
+        - FANTASY
+      nullable: true
+      example: ACTION
+    MpaaRating:
+      type: string
+      enum:
+        - G
+        - PG
+        - R
+        - NC_17
+      nullable: true
+      example: G
+    Color:
+      type: string
+      enum:
+        - BLACK
+        - YELLOW
+        - ORANGE
+        - WHITE
+      nullable: true
+      example: BLACK
+    Country:
+      type: string
+      enum:
+        - UNITED_KINGDOM
+        - FRANCE
+        - SPAIN
+        - INDIA
+      nullable: true
+      example: UNITED_KINGDOM
+    FilterType:
+      type: string
+      enum:
+        - EQ
+        - NE
+        - GT
+        - GTE
+        - LT
+        - LTE
+        - SUBSTR
+        - NSUBSTR
+      nullable: true
+      example: EQ
+      description: Filters EQ, NE, SUBSTR, NSUBSTR can be applied to the string fields, while filters EQ, NE, GT, GTE, LT, LTE can be aplied to number fields. EQ - equals, NE - not equals, GT - greater than, GTE - greater than or equals, LT - lower than, LTE - lower than or equals, SUBSTR - find string containing substring in field 'value', NSUBSTR - find string not containing substring in field 'value'
+    Person:
+      type: object
+      required:
+        - name
+        - height
+      properties:
+        name:
+          type: string
+          nullable: false
+          minLength: 1
+          example: Andrey
+        birthday:
+          type: string
+          format: date
+          nullable: true
+          example: 2024-09-13
+        height:
+          type: number
+          format: float
+          minimum: 0
+          nullable: false
+          example: 180
+        hairColor:
+          $ref: "#/components/schemas/Color"
+        nationality:
+          $ref: "#/components/schemas/Country"
+    Coordinates:
+      type: object
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: number
+          format: double
+          nullable: false
+          example: 1.1
+        y:
+          type: integer
+          format: int32
+          nullable: false
+          example: 2
+    Movie:
+      type: object
+      required:
+        - name
+        - coordinates
+        - oscarsCount
+        - genre
+        - mpaaRating
+      properties:
+        name:
+          type: string
+          nullable: false
+          minLength: 1
+          example: Interstellar
+        coordinates:
+          $ref: "#/components/schemas/Coordinates"
+        oscarsCount:
+          type: integer
+          format: int64
+          nullable: false
+          minimum: 1
+          example: 2
+        genre:
+          $ref: "#/components/schemas/MovieGenre"
+        mpaaRating:
+          $ref: "#/components/schemas/MpaaRating"
+        screenwriter:
+          $ref: "#/components/schemas/Person"
+        duration:
+          type: integer
+          format: int64
+          nullable: false
+          minimum: 1
+          example: 1
+    MovieResponse:
+      type: object
+      required:
+        - id
+        - name
+        - coordinates
+        - creationDate
+        - oscarsCount
+        - genre
+        - mpaaRating
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          nullable: false
+          minLength: 1
+          example: Interstellar
+        coordinates:
+          $ref: "#/components/schemas/Coordinates"
+        creationDate:
+          type: string
+          format: date-time
+          nullable: false
+          example: 2024-09-13T00:00:13
+        oscarsCount:
+          type: integer
+          format: int64
+          nullable: false
+          minimum: 1
+          example: 1
+        genre:
+          $ref: "#/components/schemas/MovieGenre"
+        mpaaRating:
+          $ref: "#/components/schemas/MpaaRating"
+        screenwriter:
+          $ref: "#/components/schemas/Person"
+        duration:
+          type: integer
+          format: int64
+          nullable: false
+          minimum: 1
+          example: 1
+    SearchResponse:
+      type: object
+      properties:
+        movies:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+              name:
+                type: string
+                nullable: false
+                minLength: 1
+                example: Interstellar
+              coordinates:
+                $ref: "#/components/schemas/Coordinates"
+              creationDate:
+                type: string
+                format: date-time
+                nullable: false
+                example: 2024-09-13T00:00:13
+              oscarsCount:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+              genre:
+                $ref: "#/components/schemas/MovieGenre"
+              mpaaRating:
+                $ref: "#/components/schemas/MpaaRating"
+              screenwriter:
+                $ref: "#/components/schemas/Person"
+              duration:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+            xml:
+              name: movie
+          xml:
+            wrapped: true
+            name: movies
+        totalPages:
+          type: integer
+          format: int32
+          example: 1
+    SortList:
+      type: array
+      items:
+        type: object
+        required:
+        - field
+        - type
+        properties:
+          field:
+            type: string
+            example: name
+            description: field by which the sorting will be performed
+          type:
+            type: string
+            example: asc
+            description: order of sort (asc - ascenting, desc - descending)
+        xml:
+          name: sorting
+      xml:
+        wrapped: true
+    FilterList:
+      type: array
+      items:
+        type: object
+        required:
+        - field
+        - filterType
+        - value
+        properties:
+          field:
+            type: string
+            example: name
+            description: field by which the filter will be performed
+          filterType:
+            $ref: '#/components/schemas/FilterType'
+          value:
+            type: string
+            example: Interstellar
+            description: the value based on which the filter will be applied
+        xml:
+          name: filter
+      xml:
+        wrapped: true
+    FilterRequest:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          example: 0
+          description: page number (must be greater or equals to zero)
+        pageSize:
+          type: integer
+          format: int32
+          example: 10
+          description: page size (must be greater or equals to one)
+        sortings:
+          $ref: '#/components/schemas/SortList'
+        filters:
+          $ref: '#/components/schemas/FilterList'
+    MoviesScreenwriterMaxResponse:
+      type: object
+      properties:
+        movies:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+              name:
+                type: string
+                nullable: false
+                minLength: 1
+                example: Interstellar
+              coordinates:
+                $ref: "#/components/schemas/Coordinates"
+              creationDate:
+                type: string
+                format: date-time
+                nullable: false
+                example: 2024-09-13T00:00:13
+              oscarsCount:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+              genre:
+                $ref: "#/components/schemas/MovieGenre"
+              mpaaRating:
+                $ref: "#/components/schemas/MpaaRating"
+              screenwriter:
+                $ref: "#/components/schemas/Person"
+              duration:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                example: 1
+            xml:
+              name: movie
+          xml:
+            wrapped: true
+            name: movies
+    Error:
+      type: object
+      required:
+        - message
+        - time
+      properties:
+        message:
+          type: string
+          example: Internal Server Error
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13
+    Error400:
+      xml: 
+        name: Error
+      type: object
+      required:
+        - message
+        - invalidFields
+        - time
+      properties:
+        message:
+          type: string
+          example: Bad Request
+        invalidFields:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: id
+              reason:
+                type: string
+                example: id must be a number
+            xml:
+              name: invalidField
+          xml:
+            wrapped: true
+            name: invalidFields
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13
+    Error404:
+      xml: 
+        name: Error
+      type: object
+      required:
+        - message
+        - time
+      properties:
+        message:
+          type: string
+          example: Not Found
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13
+    Error414:
+      xml: 
+        name: Error
+      type: object
+      required:
+        - message
+        - time
+      properties:
+        message:
+          type: string
+          example: URI is too long
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13
+    Error422:
+      xml: 
+        name: Error
+      type: object
+      required:
+        - message
+        - invalidFields
+        - time
+      properties:
+        message:
+          type: string
+          example: Unprocessable Entity
+        invalidFields:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: screenwriter.birthday
+              reason:
+                type: string
+                example: screenwriter.birthday can not be in future
+            xml:
+              name: invalidField
+          xml:
+            wrapped: true
+            name: invalidFields
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13
+    Error429:
+      xml: 
+        name: Error
+      type: object
+      required:
+        - message
+        - time
+      properties:
+        message:
+          type: string
+          example: Too Many Requests
+        time:
+          type: string
+          format: date-time
+          example: 2024-09-13T00:00:13

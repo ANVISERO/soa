@@ -1,0 +1,277 @@
+/*:root {*/
+/*  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;*/
+/*  line-height: 1.5;*/
+/*  font-weight: 400;*/
+
+/*  color-scheme: light dark;*/
+/*  color: rgba(255, 255, 255, 0.87);*/
+/*  !*background-color: #242424;*!*/
+/*  background-color: rgba(255, 255, 255, 0.87);*/
+
+/*  font-synthesis: none;*/
+/*  text-rendering: optimizeLegibility;*/
+/*  -webkit-font-smoothing: antialiased;*/
+/*  -moz-osx-font-smoothing: grayscale;*/
+/*}*/
+
+/*a {*/
+/*  font-weight: 500;*/
+/*  color: #646cff;*/
+/*  text-decoration: inherit;*/
+/*}*/
+/*a:hover {*/
+/*  color: #535bf2;*/
+/*}*/
+
+/*body {*/
+/*  margin: 0;*/
+/*  display: flex;*/
+/*  place-items: center;*/
+/*  min-width: 320px;*/
+/*  min-height: 100vh;*/
+/*}*/
+
+/*h1 {*/
+/*  font-size: 3.2em;*/
+/*  line-height: 1.1;*/
+/*}*/
+
+/*button {*/
+/*  border-radius: 8px;*/
+/*  border: 1px solid transparent;*/
+/*  padding: 0.6em 1.2em;*/
+/*  font-size: 1em;*/
+/*  font-weight: 500;*/
+/*  font-family: inherit;*/
+/*  background-color: #1a1a1a;*/
+/*  cursor: pointer;*/
+/*  transition: border-color 0.25s;*/
+/*}*/
+/*button:hover {*/
+/*  border-color: #646cff;*/
+/*}*/
+/*button:focus,*/
+/*button:focus-visible {*/
+/*  outline: 4px auto -webkit-focus-ring-color;*/
+/*}*/
+
+/*@media (prefers-color-scheme: light) {*/
+/*  :root {*/
+/*    color: #213547;*/
+/*    background-color: #ffffff;*/
+/*  }*/
+/*  a:hover {*/
+/*    color: #747bff;*/
+/*  }*/
+/*  button {*/
+/*    background-color: #f9f9f9;*/
+/*  }*/
+/*}*/
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');*/
+/*@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');*/
+
+
+
+
+/* -=-=-=- Theme Setting -=-=-=- */
+
+:root {
+    --background: #eeeded;
+    --primary: #5f9fff;
+    --secondary: #ffffff;
+    --button: #323232;
+    --text: #323232;
+    --hover: #f7f7f7;
+    /*--shadow: -2px 2px 12px rgba(50, 50, 50, 0.5);*/
+    /*--primary-shadow: -2px 2px 12px rgba(255, 182, 95, 0.5);*/
+    /*--card-shadow: -2px 2px 12px rgba(20, 20, 20, 0.5);*/
+    --shadow: 0 3px 10px rgba(0, 0, 0, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);
+    --primary-shadow: 0 3px 10px rgba(255, 182, 95, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);;
+    --card-shadow: 0 3px 10px rgba(0, 0, 0, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);
+    --bright-shadow: -2px 2px 12px rgba(50, 50, 50, 0.5);
+
+    /* <---> icons <---> */
+    --logo: url("./assets/icons/logo__light.svg");
+    --slovenlypolygon: url("./assets/icons/slovenlypolygon__light.svg");
+    --greeting: url("./assets/home/home__light.svg");
+    --about: url("./assets/home/about__light.svg");
+    --not-found: url("./assets/404/404__light.svg");
+}
+
+.theme__dark {
+    --background: #323232;
+    --primary: #be9ded;
+    --secondary: #242424;
+    --button: #f7f7f7;
+    --text: #f7f7f7;
+    --hover: #f7f7f7;
+    /*--shadow: -1px 1px 8px rgba(247, 247, 247, 0.75);*/
+    /*--primary-shadow: -2px 2px 12px rgba(190, 157, 237, 0.75);*/
+    /*--card-shadow: -2px 2px 12px rgba(20, 20, 20, 0.75);*/
+    --shadow: 0 3px 10px rgba(255, 255, 255, 0.1), 0 3px 3px rgba(255, 255, 255, 0.05);;
+    --primary-shadow: 0 3px 10px rgba(190, 157, 237, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);;
+    --card-shadow: 0 3px 10px rgba(0, 0, 0, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);
+    --bright-shadow: -1px 1px 8px rgba(247, 247, 247, 0.75);
+
+    /* <---> icons <---> */
+    --logo: url("./assets/icons/logo__dark.svg");
+    --slovenlypolygon: url("./assets/icons/slovenlypolygon__dark.svg");
+    --greeting: url("./assets/home/home__dark.svg");
+    --about: url("./assets/home/about__dark.svg");
+    --not-found: url("./assets/404/404__dark.svg");
+}
+
+* {
+    transition: background 0.1s ease-in-out !important;
+}
+
+html,
+body {
+    position: relative;
+    height: 100%;
+
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+
+    color: var(--text);
+    background: var(--background);
+
+    font-size: 12px;
+    font-weight: 400;
+    font-family: "Montserrat", sans-serif;
+}
+
+.jsonCell_nationalityRestriction {
+    display: flex;
+    gap: 1rem;
+}
+
+a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary);
+    text-shadow: var(--primary-shadow);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--text);
+    border-radius: 20px;
+}
+
+input::placeholder {
+    color: var(--text);
+    opacity: 1;
+    /* Firefox */
+}
+
+input::-moz-placeholder {
+    color: var(--text);
+    opacity: 0.7;
+    /* Firefox */
+}
+
+input::-webkit-input-placeholder {
+    color: var(--text);
+    opacity: 0.7;
+    /* Firefox */
+}
+
+.animate {
+    animation: animate 0.15s ease;
+}
+
+select {
+    cursor: pointer;
+}
+
+.table {
+    width: 100%;
+}
+
+.table__wrapper div {
+    overflow: scroll !important;
+}
+
+tr {
+    height: 30px;
+}
+
+.jsonRow:hover {
+    color: var(--primary) !important;
+    cursor: pointer;
+}
+
+.jsonCell {
+    flex-direction: c;
+    line-height: 100%;
+    min-width: 120px;
+    word-break: break-word;
+    flex: 1;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.jsonCell_nationalityRestriction {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 30px;
+}
+
+@keyframes animate {
+    0% {
+        transform: scale(0.4);
+        opacity: 0.4;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate__reverse {
+    animation: animate__reverse 0.2s ease;
+}
+
+@keyframes animate__reverse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+}
+
+.animate__reverse {
+    transition: all 0.2s ease-in-out !important;
+}
+
+.hidden {
+    opacity: 0;
+    scale: 0;
+}
+
+@media (max-width: 550px) {
+    html {
+        font-size: 14px !important;
+    }
+}
