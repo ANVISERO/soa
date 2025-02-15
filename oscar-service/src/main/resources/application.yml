@@ -8,7 +8,11 @@ spring:
           truststore:
             certificate: mytruststore.p12
 server:
-  port: 9797
+  port: 9091
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
 #  ssl:
 #    trust-store: classpath:keystore/mytruststore.p12
 #    trust-store-password: changeit
