@@ -1,0 +1,45 @@
+server:
+  port: 8765
+  ssl:
+    enabled: true
+    key-store: classpath:mykeystore.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    key-alias: mycert
+zuul:
+  routes:
+    oscar:
+      path: /oscar/**
+      serviceId: oscar
+#      url: https://oscar:8083/oscar
+    users:
+      path: /api/users/**
+      url: http://localhost:8003/
+trust:
+  store:
+    url: classpath:mytruststore.p12
+    password: changeit
+spring:
+  application:
+    name: api-gateway
+  ssl:
+    bundle:
+      pem:
+        client:
+          truststore:
+            certificate: mytruststore.p12
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+#    tls:
+#      enabled: true
+#      trust-store-password: changeit
+#      trust-store-type: PKCS12
+#      trust-store: classpath:mytruststore.p12
+logging:
+  level:
+    org.springframework.cloud.netflix.eureka: DEBUG
+    org.springframework.cloud.netflix.zuul: DEBUG
+    com.netflix.discovery: DEBUG
+#      trust-store: file://${user.home}/Desktop/ITMO/4course/SOA/labs/soa/mytruststore.p12
