@@ -1,0 +1,11 @@
+HTTP/1.1 503 Service Unavailable
+Connection: close
+Content-Type: application/xml
+access-control-allow-credentials: true
+access-control-allow-headers: X-Requested-With, Authorization, Accept-Version, Content-MD5, CSRF-Token, Content-Type
+access-control-allow-methods: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD
+access-control-allow-origin: *
+
+<Error>
+    <message>Service is not available</message>
+</Error>
