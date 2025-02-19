@@ -1,14 +1,32 @@
+server:
+  port: 8081
 spring:
   application:
-    name: oscar-service
-  ssl:
-    bundle:
-      pem:
-       client:
-          truststore:
-            certificate: mytruststore.p12
-server:
-  port: 9797
+    name: oscar
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8083/eureka/
+random:
+  value: ${random.value}
+#    tls:
+#      enabled: true
+#      trust-store-password: changeit
+#      trust-store-type: PKCS12
+#      trust-store: file://${user.home}/Desktop/ITMO/4course/SOA/labs/soa/mytruststore.p12
+#trust:
+#  store:
+#    url: classpath:mytruststore.p12
+#    password: changeit
+#  config:
+#    import: 'configserver:'
+#  cloud:
+#    config:
+#      uri: http://localhost:8083
+
+
+
+
 #  ssl:
 #    trust-store: classpath:keystore/mytruststore.p12
 #    trust-store-password: changeit

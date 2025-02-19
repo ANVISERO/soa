@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -56,11 +58,16 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://se.ifmo.ru") // Домен вашего фронтенда
+                        .allowedOrigins("https://se.ifmo.ru", "http://localhost") // Домен вашего фронтенда
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // Убедитесь, что опция OPTIONS включена
                         .allowedHeaders("*")
                         .allowCredentials(true); // Если вы отправляете cookies или используются авторизационные заголовки
             }
         };
+    }
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
     }
 }

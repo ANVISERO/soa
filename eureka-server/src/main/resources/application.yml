@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: eureka-server
+server:
+  port: 8083
+#  ssl:
+#    enabled: true
+#    key-store: classpath:static/mykeystore.p12
+#    key-store-password: changeit
+#    key-store-type: PKCS12
+#    key-alias: mycert
+
+eureka:
+  client:
+    service-url:
+      defaultZone: https://localhost:8083/eureka/
+    register-with-eureka: false
+    fetch-registry: false
+
+#logging.level.com.netflix.eureka=0FF
+#logging.level.com.netflix.discovery=0FF
+
+#logging.pattern.console=%C(1.} [%-5level] %d{HH:mm:ss} - %msg%n

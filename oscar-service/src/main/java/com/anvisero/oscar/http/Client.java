@@ -24,25 +24,29 @@ import java.util.Collections;
 
 @Service
 public class Client {
-    private static final RestTemplate restTemplate;
-    private static final String BASE_URL = "https://localhost:8765/movie/api/v1/movies/";
+    private final RestTemplate restTemplate;
+    private static final String BASE_URL = "http://localhost:8088/movie/api/v1/movies/";
 
-    static {
-        SSLConfigurationProvider provider = new SSLConfigurationProvider();
-        try {
-            SSLContext sslContext = provider.getSSLContext();
-            PoolingHttpClientConnectionManager connectionManager = provider.getConnectionManager(sslContext);
-            CloseableHttpClient httpClient = provider.createHttpClient(connectionManager);
-            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-            restTemplate = new RestTemplate(requestFactory);
-        } catch (CertificateException
-                 | KeyStoreException
-                 | IOException
-                 | NoSuchAlgorithmException
-                 | KeyManagementException ex) {
-            throw new RuntimeException(ex);
-        }
+    public Client(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
+
+//    static {
+//        SSLConfigurationProvider provider = new SSLConfigurationProvider();
+//        try {
+//            SSLContext sslContext = provider.getSSLContext();
+//            PoolingHttpClientConnectionManager connectionManager = provider.getConnectionManager(sslContext);
+//            CloseableHttpClient httpClient = provider.createHttpClient(connectionManager);
+//            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+//            restTemplate = new RestTemplate(requestFactory);
+//        } catch (CertificateException
+//                 | KeyStoreException
+//                 | IOException
+//                 | NoSuchAlgorithmException
+//                 | KeyManagementException ex) {
+//            throw new RuntimeException(ex);
+//        }
+//    }
 
 
     public LoosersResponseList getLosers() {
