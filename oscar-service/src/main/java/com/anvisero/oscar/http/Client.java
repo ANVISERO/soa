@@ -25,7 +25,7 @@ import java.util.Collections;
 @Service
 public class Client {
     private final RestTemplate restTemplate;
-    private static final String BASE_URL = "https://localhost:8765/movie/api/v1/movies/";
+    private static final String BASE_URL = "http://localhost:8088/movie/api/v1/movies/";
 
     public Client(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;

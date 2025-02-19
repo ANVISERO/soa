@@ -18,7 +18,5 @@
         <module>oscar-service</module>
         <module>movie-service</module>
         <module>eureka-server</module>
-        <module>zuul-service</module>
-        <module>config-service</module>
     </modules>
 </project>

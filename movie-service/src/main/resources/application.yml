@@ -6,7 +6,7 @@ logging:
     org.springframework.transaction.interceptor: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
 server:
-  port: 8765
+  port: 8089
   servlet:
     context-path: /
 #  ssl:
@@ -19,11 +19,9 @@ server:
 spring:
   application:
     name: movie-service
-  mvc:
-    throw-exception-if-no-handler-found: true
   web:
     resources:
-      add-mappings : false
+      add-mappings: false
   config:
     activate:
       on-profile: default
@@ -49,3 +47,14 @@ spring:
     jpa:
       repositories:
         bootstrap-mode: default
+  cloud.consul:
+    host: localhost
+    port: 8500
+    discovery:
+      health-check-path: /actuator/health
+      health-check-interval: 10s
+      enabled: true
+      register: true
+      fail-fast: false
+random:
+  value: ${random.value}

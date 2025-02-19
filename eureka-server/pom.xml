@@ -23,6 +23,12 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+<!--			<classifier>sources</classifier>-->
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
