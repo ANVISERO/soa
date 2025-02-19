@@ -18,5 +18,6 @@
         <module>oscar-service</module>
         <module>movie-service</module>
         <module>eureka-server</module>
+        <module>api-gateway</module>
     </modules>
 </project>

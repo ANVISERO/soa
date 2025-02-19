@@ -2,7 +2,7 @@ spring:
   application:
     name: eureka-server
 server:
-  port: 8761
+  port: 8083
 #  ssl:
 #    enabled: true
 #    key-store: classpath:static/mykeystore.p12
@@ -12,8 +12,8 @@ server:
 
 eureka:
   client:
-#    service-url:
-#      defaultZone: https://localhost:8081/eureka/
+    service-url:
+      defaultZone: https://localhost:8083/eureka/
     register-with-eureka: false
     fetch-registry: false
 

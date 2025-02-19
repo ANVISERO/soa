@@ -2,11 +2,13 @@ server:
   port: 8081
 spring:
   application:
-    name: oscar-service
+    name: oscar
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8083/eureka/
+random:
+  value: ${random.value}
 #    tls:
 #      enabled: true
 #      trust-store-password: changeit
